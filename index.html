@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOROHOSHI YUYA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=M+PLUS+1p:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+
+/* ══════════════════════════════════════════════
+   TYPOGRAPHY TOKENS — edit here
+   ══════════════════════════════════════════════ */
+:root {
+  --ff-d : 'Public Sans', 'M PLUS 1p', sans-serif;
+  --ff-m : 'Public Sans', 'M PLUS 1p', sans-serif;
+
+  --fs-xl : clamp(28px, 8vw, 80px);    /* page headings    */
+  --fs-md : clamp(17px, 2.2vw, 24px);  /* section titles   */
+  --fs-sm : clamp(12px, 1.1vw, 14px);  /* labels / body    */
+
+  --fw-bk : 800;
+  --fw-bd : 700;
+  --fw-rg : 500;
+
+  --ls-tg : -0.02em;
+  --ls-wd :  0.16em;
+
+  --bg     : #4A5C64;
+  --text   : #ffffff;
+  --muted  : #8EA0A8;
+  --dim    : #344048;
+  --border : rgba(255,255,255,0.11);
+  --hpad   : clamp(18px, 4vw, 56px);
+  --hh     : 62px;
+  --ease   : cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --sec-vpad: clamp(40px, 6vh, 72px); /* HOME sections: border間の垂直余白 */
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; scrollbar-color: transparent transparent; }
+html.is-scrolling:not(.modal-active) { scrollbar-color: rgba(255,255,255,0.22) transparent; }
+html::-webkit-scrollbar       { width: 6px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; transition: background 0.4s; }
+html.is-scrolling:not(.modal-active)::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); }
+/* Safari: モーダル中はスクロールバーを強制的に非表示 */
+html.modal-active::-webkit-scrollbar-thumb  { background: transparent !important; }
+html.modal-active::-webkit-scrollbar-track  { background: transparent !important; }
+html.modal-active { scrollbar-color: transparent transparent !important; }
+body {
+  font-family: var(--ff-m); font-weight: 500;
+  background: var(--bg); color: var(--text);
+  overflow-x: hidden; min-height: 100vh;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.18);
+}
+header, header * { text-shadow: none; }
+#modal-sheet, #modal-sheet * { text-shadow: 0 1px 4px rgba(255,255,255,0.18); }
+.prof-card, .prof-card * { text-shadow: 0 1px 6px rgba(0,0,0,0.20); }
+img, video { max-width: 100%; display: block; }
+
+/* ══════════════════════════════════════════════
+   BACKGROUND — Canvas generative (see JS below)
+   Base color: var(--bg) = #2E3C42
+   Configurable via MAIN_COLOR in script
+   ══════════════════════════════════════════════ */
+#bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  display: block;
+}
+
+/* ══════════════════════════════════════════════
+   HEADER — 2-line logo
+   ══════════════════════════════════════════════ */
+header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--hh); padding: 0 var(--hpad);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(30,40,46,0.70);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.logo-block { cursor: pointer; user-select: none; flex-shrink: 1; min-width: 0; overflow: hidden; }
+.logo-name {
+  font-family: var(--ff-d); font-size: clamp(16px, 1.2vw, 19px); font-weight: var(--fw-bk);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--text);
+  white-space: nowrap;
+}
+.logo-sub {
+  font-family: var(--ff-m); font-size: clamp(11px, 0.9vw, 12px); font-weight: var(--fw-rg);
+  letter-spacing: 0.10em; text-transform: uppercase; color: rgba(240,237,232,0.72);
+  margin-top: 2px; white-space: nowrap;
+}
+header > nav { display: flex; flex-shrink: 0; gap: clamp(8px, 1.8vw, 28px); }
+nav button {
+  font-family: var(--ff-m); font-size: clamp(11px, 1.0vw, 12px); font-weight: var(--fw-bd);
+  letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--muted); background: none; border: none;
+  cursor: pointer; padding: 0; transition: color 0.2s; white-space: nowrap;
+}
+nav button:hover, nav button.on { color: var(--text); }
+
+/* ══════════════════════════════════════════════
+   PAGE VIEWS — fade transition
+   ══════════════════════════════════════════════ */
+.view { display: none; position: relative; z-index: 2; }
+.view.on      { display: block; animation: vIn  0.42s var(--ease) both; }
+.view.leaving { display: block; animation: vOut 0.34s var(--ease) both; pointer-events: none; }
+.view.modal-open { visibility: hidden; }
+@keyframes vIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes vOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* ══════════════════════════════════════════════
+   REEL SECTION — top of home
+   ══════════════════════════════════════════════ */
+#reel {
+  /* top = header + same gap as left/right; bottom = --sec-vpad */
+  padding: calc(var(--hh) + var(--hpad)) var(--hpad) var(--sec-vpad);
+  border-bottom: 1px solid var(--border);
+}
+.reel-inner {
+  width: 100%; aspect-ratio: 16/9;
+  background: #000; position: relative; overflow: hidden;
+  border-radius: clamp(6px, 1vw, 12px);
+}
+.reel-inner iframe,
+.reel-inner video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; display: block; border: none;
+}
+/* placeholder when no reel is set */
+.reel-ph {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(
+    135deg,
+    rgba(30,34,48,1) 0%,
+    rgba(24,28,40,1) 40%,
+    rgba(20,24,36,1) 100%
+  );
+}
+.reel-ph-inner { text-align: center; }
+.reel-ph-label {
+  font-family: var(--ff-m); font-size: var(--fs-sm);
+  letter-spacing: 0.42em; text-transform: uppercase; color: rgba(255,255,255,0.22);
+  margin-bottom: 8px;
+}
+.reel-ph-hint {
+  font-size: 9px; letter-spacing: 0.12em; color: rgba(255,255,255,0.10);
+}
+
+/* ══════════════════════════════════════════════
+   CAROUSEL
+   ══════════════════════════════════════════════ */
+.car-section {
+  border-top: 1px solid var(--border);
+  padding: var(--sec-vpad) 0;
+  overflow: hidden;
+}
+.car-hd {
+  padding: 0 var(--hpad) clamp(14px,2.2vh,24px);
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.car-title {
+  font-family: var(--ff-d);
+  font-size: clamp(26px,4.2vw,52px); font-weight: var(--fw-bk);
+  letter-spacing: var(--ls-tg); color: var(--text);
+  background: none; border: none; cursor: pointer; padding: 0;
+  transition: opacity 0.2s;
+}
+.car-title:hover { opacity: 0.5; }
+/* View All — text underlined, arrow not */
+.viewall {
+  font-family: var(--ff-m); font-size: var(--fs-sm);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--text); background: none; border: none;
+  cursor: pointer; padding: 0;
+  display: flex; align-items: center; gap: 7px;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.viewall:hover { opacity: 0.45; }
+.viewall-txt { text-decoration: underline; text-underline-offset: 4px; }
+.viewall-arr { text-decoration: none; font-size: var(--fs-sm); }
+
+.car-outer {
+  overflow: hidden;
+  position: relative; /* pseudo-element の親 */
+}
+/* 両サイド フェードシャドウ — ループ境目を完全に隠す */
+.car-outer::before,
+.car-outer::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0;
+  width: var(--hpad);
+  z-index: 2; pointer-events: none;
+}
+.car-outer::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.37), transparent);
+}
+.car-outer::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0,0,0,0.37), transparent);
+}
+.car-track {
+  display: flex; gap: 14px;
+  padding: 0 var(--hpad);
+  width: max-content;
+  will-change: transform;
+}
+/* ~2× larger cards */
+.cc {
+  width: clamp(280px, 34vw, 520px);
+  height: clamp(176px, 21vw, 326px);
+  flex-shrink: 0; position: relative; overflow: hidden;
+  cursor: default; background: var(--dim);
+  border-radius: clamp(4px, 0.6vw, 8px);
+}
+.cc img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.7s var(--ease) 0.08s; /* hover-out: 遅延あり */
+}
+.cc:hover img {
+  transform: scale(1.04);
+  transition: transform 0.7s var(--ease); /* hover-in: 即反応 */
+}
+.cc-shad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 90%);
+  opacity: 0; transition: opacity 0.4s 0.08s; pointer-events: none; /* hover-out: 遅延あり */
+}
+.cc:hover .cc-shad { opacity: 1; transition: opacity 0.4s; } /* hover-in: 即反応 */
+.cc-info {
+  position: absolute; bottom: 12px; left: 13px;
+  opacity: 0; transition: opacity 0.4s 0.08s; pointer-events: none; /* hover-out: 遅延あり */
+}
+.cc:hover .cc-info { opacity: 1; transition: opacity 0.4s; } /* hover-in: 即反応 */
+.cc-ttl {
+  font-family: var(--ff-d);
+  font-size: clamp(12px,1.2vw,16px); font-weight: var(--fw-bd);
+  color: #fff; line-height: 1.2;
+}
+.cc-sub {
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7); margin-top: 3px;
+}
+
+/* ══════════════════════════════════════════════
+   PROFILE — dark card with central white glow
+   ══════════════════════════════════════════════ */
+#profile {
+  border-top: 1px solid var(--border);
+  padding: var(--sec-vpad) var(--hpad);
+  display: flex; flex-direction: column; align-items: center;
+}
+.prof-card {
+  width: 100%; max-width: 760px;
+  padding: clamp(24px,3.8vw,52px);
+  display: grid;
+  grid-template-columns: clamp(100px,18vw,186px) 1fr;
+  gap: clamp(18px,3vw,42px);
+  align-items: start;
+  position: relative;
+  overflow: hidden;
+  border-radius: clamp(8px,1.2vw,14px);
+  border: 1px solid rgba(255,255,255,0.30);
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+}
+/* Central white gradient — the "soft glow cushion" */
+.prof-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(
+    ellipse 90% 80% at 60% 42%,
+    rgba(255,255,255,0.13) 0%,
+    rgba(255,255,255,0.07) 38%,
+    rgba(255,255,255,0.02) 64%,
+    transparent 82%
+  );
+  pointer-events: none; z-index: 0;
+}
+.prof-card > * { position: relative; z-index: 1; }
+
+/* Photo on dark card */
+.prof-photo {
+  aspect-ratio: 3/4; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+}
+.prof-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prof-photo-ph  { width: 100%; height: 100%; display: block; }
+
+/* Text — profile section: explicit #fff */
+.prof-right {}
+.prof-heading {
+  font-family: var(--ff-d);
+  font-size: clamp(26px,4.2vw,52px); font-weight: var(--fw-bk);
+  letter-spacing: var(--ls-tg); color: #ffffff;
+  line-height: 0.9; margin-bottom: clamp(14px,2vh,22px);
+}
+.prof-name {
+  font-family: var(--ff-d);
+  font-size: clamp(13px,1.4vw,17px); font-weight: var(--fw-bd);
+  color: #ffffff; letter-spacing: 0.04em;
+  margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.prof-role {
+  font-family: var(--ff-m);
+  font-size: var(--fs-sm); color: #ffffff; letter-spacing: 0.08em;
+  margin-bottom: clamp(14px,2.2vh,24px);
+}
+.prof-items { display: flex; flex-direction: column; gap: clamp(3px,0.5vh,6px); }
+.prof-item {
+  font-size: clamp(11px,1vw,13px); color: #ffffff; line-height: 1.65;letter-spacing: 0.06em;
+}
+.prof-item a {
+  color: #ffffff; text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prof-item a:hover { opacity: 0.65; }
+
+/* ══════════════════════════════════════════════
+   CONTACT — explicit white text
+   ══════════════════════════════════════════════ */
+#contact {
+  border-top: 1px solid var(--border);
+  padding: var(--sec-vpad) var(--hpad) calc(var(--sec-vpad) + clamp(16px, 3vh, 40px));
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.ct-label {
+  font-size: var(--fs-sm); letter-spacing: var(--ls-wd);
+  text-transform: uppercase; color: #F0EDE8;
+  margin-bottom: clamp(24px,3.5vh,40px);
+}
+.ct-mail {
+  font-family: var(--ff-d);
+  font-size: clamp(14px,1.7vw,20px); font-weight: var(--fw-bd);
+  color: #F0EDE8; letter-spacing: 0.03em;
+  border-bottom: 1px solid rgba(255,255,255,0.22); padding-bottom: 3px;
+  transition: border-color 0.22s;
+}
+.ct-mail:hover { border-color: rgba(255,255,255,0.55); }
+.ct-sns {
+  display: flex; gap: clamp(20px,3vw,40px); margin-top: clamp(24px,3.5vh,40px);
+  flex-wrap: wrap; justify-content: center; align-items: center;
+}
+.ct-sns a {
+  color: #F0EDE8; transition: opacity 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.ct-sns a:hover { opacity: 0.5; }
+.ct-sns svg { display: block; width: 20px; height: 20px; }
+
+/* ══════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 18px var(--hpad);
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 6px;
+  position: relative; z-index: 2;
+}
+.ft { font-size: 10px; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.7); }
+
+/* ══════════════════════════════════════════════
+   WORKS VIEW
+   ══════════════════════════════════════════════ */
+#works { padding-top: var(--hh); min-height: 100vh; }
+.works-hd {
+  padding: clamp(28px,4.5vh,56px) var(--hpad) clamp(14px,2vh,22px);
+}
+.works-back {
+  font-size: var(--fs-sm); letter-spacing: 0.06em;
+  text-transform: uppercase; color: #ffffff;
+  background: none; border: none; cursor: pointer;
+  padding: 0; margin-bottom: clamp(12px,1.8vh,18px);
+  display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;
+}
+.works-back::before { content: '←'; }
+.works-back:hover { opacity: 0.5; }
+.works-big {
+  font-family: var(--ff-d);
+  font-size: var(--fs-xl); font-weight: var(--fw-bk);
+  letter-spacing: var(--ls-tg); color: var(--text); line-height: 0.87;
+}
+
+/* filter bar */
+.filter-wrap {
+  padding: 0 var(--hpad) clamp(12px,1.8vh,20px);
+  border-bottom: 1px solid var(--border);
+}
+.f-row { display: flex; align-items: flex-start; flex-wrap: nowrap; }
+.f-row + .f-row { margin-top: 6px; }
+.f-all-grp { flex-shrink: 0; display: flex; align-items: center; }
+.f-rest-grp { flex: 1; display: flex; flex-wrap: wrap; align-items: center; }
+.fb {
+  font-family: var(--ff-m); font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  background: none; border: none; cursor: pointer; color: rgba(240,237,232,0.40);
+  padding: 2px 0; margin-right: clamp(4px,0.6vw,8px); transition: color 0.2s;
+}
+.fb:hover, .fb.on { color: #eeeeee; }
+.f-sep { color: rgba(240,237,232,0.22); margin-right: clamp(4px,0.6vw,8px); user-select: none; }
+
+/* works grid — title outside frame, horizontal */
+.wgrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(20px,3.5vh,38px) clamp(8px,1.2vw,14px);
+  margin: clamp(20px,3.2vh,36px) var(--hpad);
+}
+.wi-cell { cursor: pointer; }
+.wi-img {
+  aspect-ratio: 1/1; overflow: hidden;
+  position: relative; background: var(--dim);
+  border: 1px solid rgba(255,255,255,0.38);
+  border-radius: clamp(4px, 0.6vw, 8px);
+}
+.wi-img img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: brightness(0.84) saturate(0.92);
+  transition: filter 0.55s var(--ease) 0.22s, transform 0.65s var(--ease) 0.06s; /* hover-out: 遅延あり */
+}
+.wi-cell:hover .wi-img img {
+  filter: brightness(1.0) saturate(1.0); transform: scale(1.05);
+  transition: filter 0.5s var(--ease), transform 0.6s var(--ease); /* hover-in: 即反応 */
+}
+.wi-img-num {
+  position: absolute; top: 10px; left: 10px;
+  font-family: var(--ff-m); font-size: 9px;
+  color: rgba(255,255,255,0.22); letter-spacing: 0.06em;
+  transition: opacity 0.3s;
+}
+.wi-cell:hover .wi-img-num { opacity: 0; }
+/* label outside, horizontal */
+.wi-label {
+  padding: clamp(7px,1vh,10px) 1px 0;
+  display: flex; align-items: baseline;
+  column-gap: clamp(5px,0.8vw,9px); row-gap: 1px;
+  flex-wrap: wrap;
+}
+.wi-ttl {
+  font-family: var(--ff-d);
+  font-size: clamp(11px,1.1vw,13px); font-weight: var(--fw-bd);
+  color: var(--text); line-height: 1.2;
+}
+.wi-sub {
+  font-family: var(--ff-m);
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(240, 237, 232, 0.8);
+}
+.wi-cell.hidden { display: none !important; }
+
+/* ══════════════════════════════════════════════
+   MODAL — center dissolve, strong white blur
+   ══════════════════════════════════════════════ */
+#modal {
+  position: fixed; inset: 0; z-index: 500;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.10s ease; /*モーダルポップモーション*/
+  background: rgba(255,255,255,0.28);
+}
+#modal.on { opacity: 1; pointer-events: all; }
+
+#modal-sheet {
+  position: absolute; inset: 0; left: var(--hpad);
+  background: rgba(255,255,255,0.20);
+  backdrop-filter: blur(80px) saturate(2.0);
+  -webkit-backdrop-filter: blur(80px) saturate(2.0);
+  border-left: 1px solid rgba(255,255,255,0.22);
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: scale(0.96);
+  transform-origin: right center;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity   0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+#modal.on #modal-sheet {
+  transform: translateX(0) scale(1);
+  opacity: 1;
+}
+
+/* ── Breadcrumb bar (fixed) ── */
+.mbar {
+  flex-shrink: 0;
+  display: flex; align-items: center;
+  height: 46px; padding: 0 clamp(14px,2.5vw,28px); gap: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  /* same as page header */
+  background: rgba(30,40,46,0.70);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  position: relative; z-index: 2;
+}
+.mbar-crumb {
+  font-family: var(--ff-m); font-size: 11px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(220,215,205,0.50); flex: 1;
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+}
+.mbar-crumb a {
+  color: rgba(220,215,205,0.50); text-decoration: none;
+  transition: color 0.2s; cursor: pointer;
+}
+.mbar-crumb a:hover { color: rgba(240,238,234,0.90); }
+.mbar-crumb .cr-sep { opacity: 0.30; font-size: 8px; }
+.mbar-crumb .cr-cur { color: rgba(240,238,234,0.80); }
+.mclose {
+  width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.18);
+  background: none; color: rgba(220,215,205,0.55); cursor: pointer;
+  font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: color 0.2s, border-color 0.2s; border-radius: 2px;
+}
+.mclose:hover { color: rgba(240,238,234,0.95); border-color: rgba(255,255,255,0.38); }
+
+/* ── Sticky title topper ── */
+.m-topper {
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 1;
+  padding: clamp(14px,2vh,22px) clamp(14px,2.5vw,28px) clamp(10px,1.4vh,16px);
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.20);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+}
+.m-topper-left { flex: 1; min-width: 0; }
+.mi-ttl {
+  font-family: var(--ff-d);
+  font-size: clamp(17px,1.9vw,24px); font-weight: var(--fw-bk);
+  color: rgba(0,0,0,0.88); line-height: 1.15; word-break: break-word;
+}
+.mi-date {
+  font-family: var(--ff-m); font-size: 11px; font-weight: var(--fw-bd);
+  letter-spacing: 0.1em; color: rgba(0,0,0,0.50);
+  white-space: nowrap; text-align: right;
+}
+.mi-sub {
+  font-family: var(--ff-m); font-size: 11px; font-weight: var(--fw-bd);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: rgba(0,0,0,0.45); margin-top: 5px;
+}
+/* Topper right: date + tool badges stacked, right-aligned */
+.m-topper-right {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: 6px; flex-shrink: 0;
+}
+.mi-tools-topper {
+  display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end;
+}
+/* Tool badges — auto width by content */
+.mi-tool {
+  font-family: var(--ff-d); font-size: 8px; font-weight: var(--fw-bk);
+  letter-spacing: 0.08em; color: #fff; line-height: 1;
+  height: 22.5px; border-radius: 4px; padding: 0 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(30,40,46,0.70); white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.30);
+}
+
+/* ── Body: 2-col, unified scroll ── */
+.m-scroll {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.m-scroll.is-scrolling { scrollbar-color: rgba(0,0,0,0.22) transparent; }
+.m-scroll::-webkit-scrollbar { width: 4px; }
+.m-scroll::-webkit-scrollbar-track { background: transparent; }
+.m-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 2px; transition: background 0.4s; }
+.m-scroll.is-scrolling::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); }
+.m-scroll.is-scrolling::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.38); }
+.mbody {
+  display: grid;
+  grid-template-columns: 1fr clamp(220px,28vw,360px);
+  align-items: start;
+}
+
+/* ── Left: media column ── */
+.m-media {
+  display: flex; flex-direction: column;
+  background: #000;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ── Main slider ── */
+.mslider {
+  flex-shrink: 0;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: min(100%, calc((100svh - 46px - clamp(50px,8vh,80px)) * 16 / 9));
+  max-height: calc(100svh - 46px - clamp(50px,8vh,80px));
+  align-self: center;
+  overflow: hidden; background: #000;
+  cursor: grab; user-select: none;
+}
+.mslider:active { cursor: grabbing; }
+.mslider-track {
+  display: flex; height: 100%;
+  transition: transform 0.26s cubic-bezier(0.25,0.46,0.45,0.94);
+  will-change: transform;
+}
+.mslider-item {
+  flex-shrink: 0; width: 100%; height: 100%;
+  position: relative; background: #000; overflow: hidden;
+}
+.mslider-item img {
+  width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none;
+}
+.mslider-item .vid-wrap { width: 100%; height: 100%; aspect-ratio: unset; }
+.mslider-item iframe    { width: 100%; height: 100%; display: block; border: none; }
+
+/* ── Dots (inside slider, bottom-center) ── */
+.mdots {
+  position: absolute;
+  bottom: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 10;
+  display: flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.28);
+  border-radius: 12px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.22s;
+}
+.m-media:hover .mdots { opacity: 1; pointer-events: all; }
+.mdot {
+  width: 14px; height: 14px;
+  border-radius: 50%; background: transparent;
+  position: relative; cursor: pointer; flex-shrink: 0;
+  opacity: 0.28; transition: opacity 0.28s;
+}
+.mdot::before {
+  content: ''; position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+}
+.mdot.on { opacity: 1; }
+.mdot:hover:not(.on) { opacity: 0.60; }
+
+/* ── Caption (media-bottom, legacy) ── */
+.mcaption {
+  flex-shrink: 0;
+  padding: 3px clamp(10px,1.8vw,16px) 4px;
+  font-family: var(--ff-m); font-size: 10px;
+  color: rgba(255,255,255,0.38); letter-spacing: 0.06em; line-height: 1.5;
+  background: #000;
+  display: none;
+}
+.mcaption.has-text { display: block; }
+
+/* ── Caption (right-panel, id:EX style) ── */
+.mi-caption-block { padding-bottom: clamp(10px,1.4vh,16px); }
+.mi-cap-header {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+  margin-bottom: 5px; min-height: 1.2em;
+}
+.mi-cap-label {
+  font-family: var(--ff-d); font-size: clamp(14px,1.3vw,18px); font-weight: var(--fw-bk);
+  color: rgba(0,0,0,0.88); letter-spacing: -0.01em; line-height: 1.2;
+  transition: opacity 0.22s; flex: 1;
+}
+.mi-cap-date {
+  font-family: var(--ff-m); font-size: clamp(11px,0.85vw,13px); font-weight: var(--fw-bd);
+  letter-spacing: 0.10em; color: rgba(0,0,0,0.40); white-space: nowrap; flex-shrink: 0;
+}
+.mi-cap-text {
+  font-size: clamp(11px,1vw,13px); font-weight: var(--fw-rg);
+  color: rgba(0,0,0,0.65); line-height: 1.80;
+  transition: opacity 0.22s;
+}
+
+/* ── Thumbnail wrap ── */
+.mthumb-wrap {
+  position: relative;
+  background: #000;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  overflow: hidden;
+  height: clamp(120px, 22vh, 220px);
+  flex-shrink: 0;
+}
+.mthumb-grad {
+  position: absolute; top: 0; left: 0; right: 0; height: 44px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.80) 0%, transparent 100%);
+  pointer-events: none; z-index: 2;
+}
+.mthumb-strip {
+  position: absolute; inset: 0;
+  display: flex; flex-wrap: wrap; align-content: flex-start;
+  gap: 2px; padding: 2px 2px 30px 2px;
+  overflow-y: scroll; overflow-x: hidden;
+  scrollbar-width: none;
+}
+.mthumb-strip::-webkit-scrollbar { display: none; }
+/* ── Custom overlay scrollbar (dot-UI style) ── */
+.mscrollbar {
+  position: absolute;
+  right: 4px; top: 6px; bottom: 36px;
+  width: 5px; z-index: 20;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.22);
+  pointer-events: none;
+}
+.mscrollbar-thumb {
+  position: absolute;
+  left: 0; right: 0;
+  background: rgba(255,255,255,0.50);
+  border-radius: 3px;
+  min-height: 16px;
+}
+.mthumb-item {
+  flex-shrink: 0;
+  width: calc(33.333% - 2px); aspect-ratio: 16/9;
+  overflow: hidden; background: #000; cursor: pointer;
+  opacity: 0.42; transition: opacity 0.2s;
+  position: relative;
+  border-radius: clamp(4px, 0.6vw, 8px);
+}
+/* adaptive edge: white on dark media, black on bright media */
+.mthumb-item::after {
+  content: '';
+  position: absolute; inset: 0;
+  box-shadow: inset 0 0 0 1px #fff;
+  mix-blend-mode: difference;
+  opacity: 0.45;
+  pointer-events: none; z-index: 1;
+}
+.mthumb-item.on {
+  opacity: 1;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.60);
+}
+.mthumb-item:hover:not(.on) { opacity: 0.72; }
+.mthumb-item img {
+  width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+}
+.mthumb-play-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+.mthumb-play-icon::before {
+  content: '';
+  width: 28px; height: 28px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 50%;
+  position: absolute;
+}
+.mthumb-play-icon svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+}
+
+/* ── Nav bar: Top / Bottom — floats over thumbnails ── */
+.mnav {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px clamp(10px,1.8vw,16px);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(30,40,46,0.60);
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  z-index: 10;
+}
+.mnav-bar {
+  flex: 1; height: 2px; background: rgba(255,255,255,0.14); border-radius: 1px;
+  position: relative; overflow: hidden;
+}
+.mnav-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: rgba(255,255,255,0.55); border-radius: 1px;
+  transition: width 0.15s;
+}
+.mnav-btn {
+  font-family: var(--ff-m); font-size: 8px; font-weight: var(--fw-bd);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(255,255,255,0.42); background: none; border: none;
+  cursor: pointer; padding: 0; transition: color 0.2s; flex-shrink: 0;
+}
+.mnav-btn:hover { color: rgba(255,255,255,0.88); }
+
+/* ── Right: info column ── */
+.m-info {
+  overflow-x: hidden;
+  border-left: 1px solid rgba(0,0,0,0.10);
+  padding: clamp(16px,2.2vw,28px);
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(60px) saturate(2.0);
+  -webkit-backdrop-filter: blur(60px) saturate(2.0);
+  /* sticky within the unified scroll */
+  position: sticky; top: 0;
+}
+
+/* info content */
+.mi-divider {
+  border: none; border-top: 1px solid rgba(0,0,0,0.12);
+  margin: clamp(12px,1.8vh,18px) 0;
+}
+.mi-meta {
+  display: table;            /* Safari含む全ブラウザで確実に列を揃える */
+  border-collapse: separate;
+  border-spacing: 0 7px;
+}
+.mi-row  { display: table-row; }
+.mi-k {
+  display: table-cell;
+  font-family: var(--ff-m); font-size: 11px; font-weight: var(--fw-bd);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+  white-space: nowrap;       /* キー列は折り返さない */
+  padding-right: 14px;
+  vertical-align: baseline;
+}
+.mi-v {
+  display: table-cell;
+  font-size: clamp(11px,1vw,13px); font-weight: var(--fw-bd);
+  color: rgba(0,0,0,0.82); word-break: break-word; line-height: 1.6;
+  vertical-align: baseline;
+}
+.mi-sec { margin-bottom: 0; }
+.mi-sec + .mi-sec { margin-top: clamp(10px,1.4vh,14px); }
+.mi-sec-k {
+  font-family: var(--ff-m); font-size: 11px; font-weight: var(--fw-bd);
+  letter-spacing: var(--ls-wd); text-transform: uppercase;
+  color: rgba(0,0,0,0.45); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 5px;
+}
+.mi-sec-k::before { content: '–'; opacity: 0.5; }
+.mi-sec-v {
+  font-size: clamp(11px,1vw,13px); font-weight: var(--fw-rg);
+  color: rgba(0,0,0,0.78); line-height: 1.80;
+}
+.mi-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+.mi-tag {
+  font-family: var(--ff-m); font-size: 11px; font-style: italic;
+  letter-spacing: 0.05em; color: rgba(0, 0, 0, 65);
+  border: none; padding: 0;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+
+/* ══════════════════════════════════════════════
+   CUSTOM VIDEO PLAYER
+   ══════════════════════════════════════════════ */
+/* SVG icon helpers — defined inline in JS */
+.vid-wrap {
+  position: relative; background: #000;
+  width: 100%; aspect-ratio: 16/9; overflow: hidden;
+}
+.vid-wrap video { width: 100%; height: 100%; display: block; object-fit: contain; }
+.vid-ctrl {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.25s; pointer-events: none;
+}
+.vid-wrap:hover .vid-ctrl,
+.vid-wrap.paused .vid-ctrl { opacity: 1; pointer-events: all; }
+.vid-center { display: flex; align-items: center; gap: 16px; }
+.vid-btn {
+  background: rgba(0,0,0,0.48); border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 50%; color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, transform 0.15s; backdrop-filter: blur(4px);
+}
+.vid-btn:hover { background: rgba(255,255,255,0.16); transform: scale(1.09); }
+.vid-btn.play-btn { width: 52px; height: 52px; }
+.vid-btn.seek-btn { width: 36px; height: 36px; }
+.vid-btn svg { display: block; }
+/* volume — bottom right */
+.vid-vol {
+  position: absolute; bottom: 13px; right: 13px;
+  display: flex; align-items: center; gap: 6px; opacity: 0;
+  transition: opacity 0.25s;
+}
+.vid-wrap:hover .vid-vol { opacity: 1; }
+.vid-vol-ico {
+  width: 20px; height: 20px; cursor: pointer; color: rgba(255,255,255,0.72);
+  display: flex; align-items: center; justify-content: center;
+  transition: color 0.2s; flex-shrink: 0;
+}
+.vid-vol-ico:hover { color: #fff; }
+.vid-vol-ico svg { display: block; }
+.vol-track {
+  width: 68px; height: 3px;
+  background: rgba(255,255,255,0.25); border-radius: 2px;
+  position: relative; cursor: pointer;
+}
+.vol-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: rgba(255,255,255,0.85); border-radius: 2px;
+  pointer-events: none;
+}
+.vol-thumb {
+  position: absolute; top: 50%; transform: translate(-50%,-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4); cursor: grab;
+}
+.vol-thumb:active { cursor: grabbing; }
+
+/* ══════════════════════════════════════════════
+   REVEAL
+   ══════════════════════════════════════════════ */
+.rv {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.62s var(--ease), transform 0.62s var(--ease);
+}
+.rv.on { opacity: 1; transform: none; }
+
+/* ══════════════════════════════════════════════
+   HAMBURGER BUTTON
+   ══════════════════════════════════════════════ */
+.ham-btn {
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 5px;
+  width: 22px; height: 22px;
+  background: none; border: none;
+  cursor: pointer; padding: 0; flex-shrink: 0;
+}
+.ham-btn span {
+  display: block;
+  height: 2px; width: 100%;
+  background: var(--text);
+  border-radius: 1px;
+  transform-origin: center;
+  transition: transform 0.30s var(--ease), opacity 0.22s;
+}
+/* gap(5) + line(2) = 7px offset to collapse onto middle line */
+.ham-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.ham-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.ham-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Mobile nav scrim (left backdrop) ── */
+.nav-scrim {
+  position: fixed; inset: 0; z-index: 198;
+  background: rgba(0,0,0,0.38);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.34s var(--ease), visibility 0s 0.34s;
+  pointer-events: none;
+}
+.nav-scrim.open {
+  opacity: 1; visibility: visible;
+  transition: opacity 0.34s var(--ease), visibility 0s 0s;
+  pointer-events: all;
+}
+
+/* ── Mobile nav overlay (right 1/3 slide-in) ── */
+.nav-overlay {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: calc(100vw / 3);
+  z-index: 199;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
+  border-left: 1px solid rgba(255,255,255,0.30);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0 clamp(20px, 5vw, 32px);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.36s cubic-bezier(0.22,1,0.36,1), visibility 0s 0.36s;
+  pointer-events: none;
+}
+.nav-overlay.open {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 0.36s cubic-bezier(0.22,1,0.36,1), visibility 0s 0s;
+  pointer-events: all;
+}
+.nav-overlay button {
+  font-family: var(--ff-d);
+  font-size: clamp(11px, 2vw, 13px);
+  font-weight: var(--fw-bd);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  text-shadow: 0 1px 6px rgba(0,0,0,0.28);
+  background: none; border: none; cursor: pointer;
+  padding: clamp(18px, 3.2vh, 26px) 0;
+  text-align: left;
+  width: 100%;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  transition: color 0.2s;
+}
+.nav-overlay button:first-child { border-top: 1px solid rgba(255,255,255,0.18); }
+.nav-overlay button:hover,
+.nav-overlay button.on { color: rgba(255,255,255,0.95); }
+
+/* Only visible on mobile */
+@media (min-width: 769px) {
+  .nav-overlay, .nav-scrim { display: none !important; }
+}
+
+/* ── Dots: touch-active ── */
+.mdots.touch-active { opacity: 1 !important; pointer-events: all !important; }
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — ≤ 480px  logo-sub 非表示
+   ══════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .logo-sub { display: none; }
+}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — ≤ 768px
+   ══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  :root { --hh: 52px; --hpad: 16px; --sec-vpad: clamp(28px, 5vh, 44px); }
+
+  /* header: hide desktop nav, show hamburger */
+  header > nav { display: none; }
+  .ham-btn     { display: flex; }
+
+  /* hero */
+  .hero-inner { padding-bottom: clamp(28px,5vh,44px); }
+
+  /* carousel cards narrower */
+  .cc {
+    width: clamp(180px, 68vw, 280px);
+    height: clamp(112px, 42vw, 175px);
+  }
+
+  /* profile card → stacked */
+  .prof-card {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+  }
+  .prof-photo { max-width: 160px; }
+  .prof-heading { font-size: clamp(32px, 8vw, 48px); }
+  .car-title    { font-size: clamp(32px, 8vw, 48px); }
+
+  /* works grid → 2 cols on mobile */
+  .wgrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 8px;
+    margin: 16px var(--hpad);
+  }
+
+  .fb { font-size: 11px; letter-spacing: 0; margin-right: 6px; }
+  .f-sep { margin-right: 6px; }
+
+  /* contact */
+  .ct-sns { gap: 16px; }
+
+  /* footer */
+  footer { flex-direction: column; gap: 4px; align-items: center; }
+
+  /* ── MODAL: mobile ── */
+  #modal-sheet { left: 0; }
+  .mbody { grid-template-columns: 1fr; }
+  .mslider { width: min(100%, calc((100svh - 46px - clamp(50px,8vh,80px)) * 16 / 9)); }
+  .mthumb-wrap { height: clamp(100px, 28vw, 160px); }
+  .mthumb-item { width: calc(33.333% - 2px); }
+  .m-info {
+    border-left: none; border-top: 1px solid rgba(0,0,0,0.10);
+    padding: 16px; position: static;
+  }
+  /* topper: 1行レイアウト、改行なし、サイズで調整 */
+  .m-topper {
+    padding: 8px 14px;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .m-topper-left { min-width: 0; flex: 1; }
+  .mi-ttl {
+    font-size: clamp(11px, 3.8vw, 17px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mi-sub {
+    font-size: 9px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .m-topper-right { flex-shrink: 0; gap: 4px; }
+  .mi-date { font-size: 9px; }
+  .mi-tools-topper { gap: 3px; }
+  .mi-tool { font-size: 7px; height: 17px; padding: 0 4px; }
+
+  /* works back btn */
+  .works-back { margin-bottom: 8px; }
+  .works-big { font-size: clamp(42px, 12vw, 70px); }
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ─── HEADER ──────────────────────────────── -->
+<header>
+  <div class="logo-block" onclick="goHome()">
+    <div class="logo-name">Morohoshi Yuya</div>
+    <div class="logo-sub">Video Creator / Concept Designer</div>
+  </div>
+  <nav>
+    <button id="nb-home"    onclick="goHome()"                   class="on">Home</button>
+    <button id="nb-works"   onclick="goWorks()">Works</button>
+    <button id="nb-profile" onclick="goHome(); jump('profile')">Profile</button>
+    <button id="nb-contact" onclick="goHome(); jump('contact')">Contact</button>
+  </nav>
+  <button class="ham-btn" id="ham-btn" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ── Mobile nav scrim + overlay ── -->
+<div class="nav-scrim" id="nav-scrim"></div>
+<div class="nav-overlay" id="nav-overlay" role="dialog" aria-label="Navigation">
+  <button id="mo-home"    class="on"  onclick="navGo('home')">Home</button>
+  <button id="mo-works"               onclick="navGo('works')">Works</button>
+  <button                             onclick="navGo('profile')">Profile</button>
+  <button                             onclick="navGo('contact')">Contact</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     HOME VIEW
+     ══════════════════════════════════════════ -->
+<div id="view-home" class="view on">
+
+  <!-- REEL — top of page -->
+  <section id="reel">
+    <div class="reel-inner" id="reel-el"></div>
+  </section>
+
+  <!-- CAROUSEL -->
+  <div class="car-section rv">
+    <div class="car-hd">
+      <button class="car-title" onclick="goWorks()">WORKS</button>
+      <button class="viewall" onclick="goWorks()">
+        <span class="viewall-txt">View All</span><span class="viewall-arr">→</span>
+      </button>
+    </div>
+    <div class="car-outer">
+      <div class="car-track" id="car-track"></div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <section id="profile" class="rv">
+    <div class="prof-card">
+      <div class="prof-photo" id="prof-photo"></div>
+      <div class="prof-right">
+        <h2 class="prof-heading">PROFILE</h2>
+        <div class="prof-name" id="prof-name-el"></div>
+        <div class="prof-role" id="prof-role-el"></div>
+        <div class="prof-items" id="prof-items-el"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="rv">
+    <div class="ct-label">Contact</div>
+    <a href="mailto:morohoshiyuya01@gmail.com" class="ct-mail">morohoshiyuya01@gmail.com</a>
+    <div class="ct-sns">
+      <a href="https://vimeo.com/" target="_blank" aria-label="Vimeo">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.4 7.1c-.09 2.03-1.51 4.8-4.25 8.32C15.34 19.1 12.96 21 10.85 21c-1.31 0-2.42-1.21-3.33-3.63L5.7 10.71C5.09 8.29 4.4 7.08 3.65 7.08c-.15 0-.68.32-1.59.96L1 6.79C2 5.91 2.98 5.03 3.93 4.15 5.25 3 6.24 2.4 6.9 2.34c1.56-.15 2.52.92 2.88 3.2.39 2.46.66 4 .81 4.6.45 2.04.94 3.06 1.48 3.06.42 0 1.05-.66 1.89-1.99.84-1.33 1.29-2.34 1.35-3.03.12-1.15-.33-1.72-1.35-1.72-.48 0-.98.11-1.49.33C13.59.91 16.05-1.1 19.68.01c1.74.05 3.13.72 4.17 2.02l-.81 4.54-.64.53z"/></svg>
+      </a>
+      <a href="https://instagram.com/" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      </a>
+      <a href="https://twitter.com/" target="_blank" aria-label="X">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <a href="https://youtube.com/" target="_blank" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.51 3.54 12 3.54 12 3.54s-7.51 0-9.38.51A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14C4.49 20.46 12 20.46 12 20.46s7.51 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.54 15.57V8.43L15.82 12l-6.28 3.57z"/></svg>
+      </a>
+      <a href="https://www.wantedly.com/id/yui_morohoshi" target="_blank" aria-label="Wantedly">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.26 2 14.1 12.91 11.98 5.87H8.02L5.9 12.91 2.74 2H0l4.52 15h3.39L10 10.02 12.09 17h3.39L20 2z"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <span class="ft">© 2025 Morohoshi Yuya. All Rights Reserved.</span>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════
+     WORKS VIEW
+     ══════════════════════════════════════════ -->
+<div id="view-works" class="view">
+  <section id="works">
+    <div class="works-hd rv">
+      <button class="works-back" onclick="goHome()">Back</button>
+      <h2 class="works-big">WORKS</h2>
+    </div>
+    <div class="filter-wrap rv">
+      <div class="f-row" id="fm"></div>
+      <div class="f-row" id="fs"></div>
+    </div>
+    <div class="wgrid" id="wgrid"></div>
+  </section>
+  <footer>
+    <span class="ft">© 2025 Morohoshi Yuya. All Rights Reserved.</span>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL
+     ══════════════════════════════════════════ -->
+<div id="modal">
+  <div id="modal-sheet">
+    <div class="mbar">
+      <div class="mbar-crumb" id="mcrumb"></div>
+      <button class="mclose" id="mclose">✕</button>
+    </div>
+    <!-- sticky topper: title + subtitle -->
+    <div class="m-topper" id="m-topper">
+      <div class="m-topper-left">
+        <div class="mi-ttl" id="m-ttl"></div>
+        <div class="mi-sub" id="m-sub"></div>
+      </div>
+      <div class="m-topper-right">
+        <div class="mi-date" id="m-date"></div>
+        <div class="mi-tools-topper" id="m-tools"></div>
+      </div>
+    </div>
+    <!-- scrollable content -->
+    <div class="m-scroll" id="m-scroll">
+      <div class="mbody">
+        <div class="m-media" id="m-media"></div>
+        <div class="m-info"  id="m-info"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   ★ CONFIG — edit here
+   ════════════════════════════════════════════════ */
+
+/* ── Reel（トップ動画）設定 ──────────────────────────────
+   type  : 使用するソースを選択
+           'local'   → このHTMLと同じ階層からの相対パスを src に記入
+           'vimeo'   → Vimeo の動画IDを vimeoId に記入
+           'youtube' → YouTubeの動画IDを youtubeId に記入
+           'none'    → リールを非表示
+
+   src      : type:'local' のとき使用。HTMLファイルからの相対パス
+              例) 'Reel/reel.mp4'  →  portfolio/Reel/reel.mp4
+
+   vimeoId  : type:'vimeo' のとき使用。URLの末尾の数字のみ
+              例) https://vimeo.com/123456789  →  '123456789'
+
+   youtubeId: type:'youtube' のとき使用。URLの ?v= 以降
+              例) https://youtu.be/abcXYZ123  →  'abcXYZ123'
+
+   thumb    : type:'local' のとき使用。再生前に表示するサムネイル画像の相対パス
+              例) 'Reel/thumb.jpg'  不要なら '' のまま
+
+   volume   : 初期音量 (0.0〜1.0)。0 でミュート、1 で最大
+   ───────────────────────────────────────────────────────── */
+const REEL = {
+  type     : 'local',
+  src      : 'Reel/reel.mp4',
+  thumb    : '',             /* ← サムネイル画像パス（例: 'Reel/thumb.jpg'） */
+  vimeoId  : '',
+  youtubeId: '',
+  volume   : 0.15,   /* ← 微音スタート（0.0〜1.0） */
+};
+
+/* Profile data */
+const PROFILE_DATA = {
+  photo : "profile/photo.jpg",
+  name  : "諸星 結也 / MOROHOSHI YUYA",
+  role  : "Video Creator / Concept Designer",
+  bio   : [
+    "武蔵野美術大学 造形構想学部クリエイティブイノベーション学科 卒業",
+    "現在は制作会社の映像ディレクター / エディター",
+    "Tool : Ae, Ai, Blender, Lr, Pr, Ps",
+  ]
+};
+
+/* Works data */
+const projects = [
+  {
+    id:1, title:"収集思考に浸かる", subtitle:"Graduation Exhibition",
+    category:"Private", genre:"Installation", year:"2025.1",
+    client:"", role:"All",
+    thumbSrc:"thumbnail/01/01.JPEG", projectFolder:"projects/01",
+    mediaFiles: ["01.JPEG", "02.JPEG", "03.JPEG", "04.JPEG", "05.JPEG", "06.JPEG", "07.JPEG", "08.JPEG", "09.JPEG"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"",  text:""},
+      {label:"", text:""},
+      {label:"",   text:""},
+    ],
+    sections:[
+      {label:"Theme",   text:"卒業研究として、まず3Dプリンターを用いて立体を制作。その立体を構成要素として見立てた街のアニメーションを投映。街にある監視カメラから覗いているような構図。<br>実物の立体をどう街の建物に見立てたのか、映像内から展示された立体を探すために異なるメディアを行き来する体験を提示した。"},
+      {label:"Output", text:"A2パネル / 3Dプリンターによる立体物 / アニメーション"},
+    ],
+    tags:["Animation","#Installation","#3DCG","#3Dprinter"],
+    tools: ["Ae","BambuStudio","Blender","Pr","ProcreateDream"]
+  },
+  {
+    id:2, title:"Calm and Flow", subtitle:"Installation",
+    category:"Private", genre:"Installation", year:"2022.9",
+    client:"", role:"コンセプト設計・映像制作・ディスプレイ環境構築",
+    thumbSrc:"thumbnail/02/01.jpg", thumbPos: "right center 50%",projectFolder:"projects/02",
+    mediaFiles: ["01.jpg", "02.png","04_thumb.png"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"", text:""},
+      {label:"",   text:""},
+      {label:"",  text:""},
+      {label:"",    text:""},
+    ],
+    sections:[
+      {label:"Theme",  text:"「Flow」をテーマにProcessing・外部センサーを使って何か作品を作る5人グループワーク。"},
+      {label:"Output", text:"外部カメラが人の動きに反応してモーターで水面を揺らし、静止した状態でのみ水槽の底の投影映像を鑑賞できる。映像と水のゆらめきを静止によって際立たせた。​"},
+    ],
+    tags:["#Installation","#MotionGraphics","#Interactive"]
+    ,tools: ["Ae"]
+  },
+  {
+    id:3, title:"REASON OF BIRTH / EYE VDJ MASA feat.androp", subtitle:"MV",
+    category:"Private", genre:"MV/PV", year:"2024.12",
+    client:"AOI.Pro", role:"Edit",
+    thumbSrc:"thumbnail/03/01.png",  thumbPos: "center 20%", projectFolder:"projects/03",
+    mediaFiles: ["01.png","03.png","02.png", "https://youtu.be/d4ReoahP_qw?si=rmrJX78Fo_rxAiNg"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"",    text:""},
+      {label:"", text:""},
+      {label:"",   text:""},
+    ],
+    sections:[
+      {label:"Work", text:"EYE VDJ MASA が同年10月にリリースしたシングル「REASON OF BIRTH feat.androp」のMVを一部制作した。"},
+    ],
+    tags:["#Lyric","#MotionGraphics","#MV"],
+    tools: ["Ae","Pr"]
+  },
+  {
+    id:4, title:"つながり / Rito 1st one-man show", subtitle:"Opening Movie",
+    category:"Private", genre:"VJ", year:"2023.10",
+    client:"", role:"Direction/Edit",
+    thumbSrc:"thumbnail/04/01.gif",
+    mediaFiles: ["https://youtu.be/I9W4Y9oJra8"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"",  text:""},
+      {label:"", text:""},
+      {label:"",    text:""},
+    ],
+    sections:[
+      {label:"Theme",  text:"ゴスペルマジシャン「Rito」による1stワンマンショー。”つながり”がテーマとなる。"},
+      {label:"Output", text:"輪が広がっていくストーリーの伝わる構成を思案、開幕を感じさせる制作を行った。"},
+    ],
+    tags:["#Motion Graphics"]
+    ,tools: ["Ae","Pr"]
+  },
+  {
+    id:5, title:"tomtomtom", subtitle:"Artist Visual",
+    category:"Private", genre:"Artist Visual", year:"2023.4",
+    client:"", role:"Edit",
+    thumbSrc:"thumbnail/05/01.png", projectFolder:"projects/05",
+    mediaFiles: ["01.png","02.png"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"",   text:""},
+      {label:"", text:""},
+    ],
+    sections:[
+      {label:"Work", text:"同じ名前を持つ二人組アーティスト、交互にビジュアルが差し込むリファレンスをもらい、表裏一体を一面にするように制作。​立体感を意識し、二人の存在感を均等に表現。"},
+    ],
+    tags:["#Artist Visual","#Digital Art"]
+    ,
+    tools: ["Ae","Ps"]
+  },
+  {
+    id:6, title:"I wanna/maco marets", subtitle:"VJ",
+    category:"Private", genre:"VJ", year:"2022.9",
+    client:"", role:"MotionGraphics",
+    thumbSrc:"thumbnail/06/01.gif", projectFolder:"projects/06",
+    mediaFiles: ["01.jpg","02.png","https://youtu.be/4XXoc5AUay0?si=qVJoREDLWM9mnf3r"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"",      text:""},
+      {label:"", text:""},
+      {label:"",     text:""},
+    ],
+    sections:[
+      {label:"Theme",  text:"maco marets のシングル「I wanna」のライブ演出映像を一部制作した。"},
+      {label:"Output", text:"I(アイ)、私と愛のダブルミーニングと共通する曖昧さ・不在がテーマとなる一曲。ファンシーさと安定しない感覚をコラージュで表現。"},
+    ],
+    tags:["#Collage","#MotionGraphics","#VJ"]
+    ,
+    tools: ["Ae"]
+  },
+  {
+    id:7, title:"Gallery", subtitle:"",
+    category:"Private", genre:"", year:"2023.6",
+    client:"", role:"",
+    thumbSrc:"thumbnail/07/01.jpg", projectFolder:"projects/07",
+    mediaFiles: ["01.jpg", "02.png","03.png"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"", text:""},
+      {label:"",    text:""},
+      {label:"",   text:""},
+      {label:"",    text:""},
+    ],
+    sections:[
+      {label:"Theme",  text:""},
+      {label:"Output", text:""},
+    ],
+    tags:["#Installation","#MotionGraphics"]
+    ,
+    tools: ["Ae","Ai","Pr","Ps"]
+    ,hidden: true
+  },
+  {
+    id:8, title:"Residue", subtitle:"Short Film",
+    category:"Private", genre:"Short Film", year:"2021",
+    client:"Self-directed", role:"Director / Writer",
+    thumbSrc:"thumbnail/08.jpg", projectFolder:"projects/08",
+    mediaFiles: ["01.jpg", "02.jpg", "03.jpg", "04.jpg"],
+    vimeoId:"123456", youtubeId:"",
+    captions:[
+      {label:"", text:""},
+      {label:"", text:""},
+      {label:"", text:""},
+      {label:"", text:""},
+    ],
+    sections:[
+      {label:"Theme",  text:"記憶の断片と現在が交錯する22分の映像詩。東京の廃墟を舞台に、忘却と存在の境界を問う。"},
+      {label:"Output", text:"22分短編映画 / Rotterdam IFF 2021 オフィシャルセレクション"},
+    ],
+    tags:["#ShortFilm","#Director","#Rotterdam"]
+    ,
+    tools: ["Ae","Blender", "BambuStudio","Pr","Procreate Dream"]
+    ,hidden: true
+  },
+  {
+    id:9, title:"Liquid Architecture", subtitle:"Projection Mapping",
+    category:"Corporate", genre:"Installation", year:"2021",
+    client:"Mori Art Museum", role:"VJ / Technical Director",
+    thumbSrc:"thumbnail/09.jpg", projectFolder:"projects/09",
+    mediaFiles: ["01.jpg", "02.jpg", "03.jpg"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"", text:""},
+      {label:"", text:""},
+      {label:"",   text:""},
+    ],
+    sections:[
+      {label:"Theme",  text:"建築の外壁を「液体の建築」に変容させる映像演出。"},
+      {label:"Output", text:"建物外壁フルサイズプロジェクションマッピング、3夜間"},
+    ],
+    tags:["#ProjectionMapping","#Installation","#Architecture"]
+    ,
+    tools: ["Ae","Blender", "BambuStudio","Pr","Procreate Dream"]
+    ,hidden: true
+  },
+  {
+    id:"EX", title:"Gallery", subtitle:"Selected Works",
+    category:"Private", genre:"Others", year:"",
+    client:"", role:"",
+    thumbSrc:"thumbnail/EX/01.jpg", projectFolder:"projects/EX",
+    mediaFiles: ["01.jpg", { src: "https://youtu.be/e6Y354SuQ-w", thumb: "thumbnail/EX/02.png" },"04.png"],
+    vimeoId:"", youtubeId:"",
+    captions:[
+      {label:"Floatrium", date:"2023.6", text:"Branding - Products",
+        sections:[{label:"Work", text:""}]},
+      {label:"Floatrium", date:"2023.6", text:"Branding - PV",
+        sections:[{label:"Work", text:""}]},
+      {label:"浮力", date:"2024.8", text:"Exhibition",
+        sections:[{label:"Work", text:""}]},
+    ],
+    sections:[],
+    tags:[],
+    tools: ["Ae","Ai","Pr","Ps"]
+  }
+];
+
+/* ════════════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════════════ */
+function phSrc(w, h, label) {
+  const t = encodeURIComponent(label||'');
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='${w}' height='${h}' fill='%23181D26'/><text x='50%25' y='52%25' text-anchor='middle' dominant-baseline='middle' font-family='monospace' font-size='9' fill='rgba(255,255,255,0.1)' letter-spacing='3'>${t}</text></svg>`;
+}
+function mkImg(src, alt) {
+  const img = document.createElement('img');
+  img.alt = alt||''; img.src = src;
+  img.onerror = function(){ this.src = phSrc(800,450,alt||''); this.onerror=null; };
+  return img;
+}
+
+/* ════════════════════════════════════════════════
+   SVG ICONS for video player
+   ════════════════════════════════════════════════ */
+const IC = {
+  play : `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 3.5l10 5.5-10 5.5V3.5z" fill="currentColor"/></svg>`,
+  pause: `<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="3" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="10.5" y="3" width="3.5" height="12" rx="1" fill="currentColor"/></svg>`,
+  back : `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2L7 7l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><text x="0" y="13" font-family="monospace" font-size="5" fill="currentColor" opacity="0">10</text></svg>`,
+  fwd  : `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 2l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  volOn: `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 5.5h2.5L8 2.5v10L4.5 9.5H2v-4z" fill="currentColor"/><path d="M10 4.5c1.2.8 2 2.1 2 3.5s-.8 2.7-2 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>`,
+  volOff:`<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 5.5h2.5L8 2.5v10L4.5 9.5H2v-4z" fill="currentColor"/><path d="M10.5 5.5l3 4m0-4l-3 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+};
+
+/* ════════════════════════════════════════════════
+   CUSTOM VIDEO PLAYER — reusable
+   ════════════════════════════════════════════════ */
+function buildVideoPlayer(container, src, thumbSrc, opts) {
+  opts = opts || {};
+  const wrap = document.createElement('div');
+  wrap.className = 'vid-wrap paused';
+
+  const video = document.createElement('video');
+  video.src = src; video.playsinline = true; video.preload = 'metadata';
+  if(thumbSrc) video.poster = thumbSrc;
+  if(opts.loop)  video.loop  = true;
+  if(opts.muted) video.muted = true;
+
+  /* centre controls */
+  const ctrl = document.createElement('div');
+  ctrl.className = 'vid-ctrl';
+  ctrl.innerHTML = `<div class="vid-center">
+    <button class="vid-btn seek-btn" data-seek="-10" title="−10s">${IC.back}</button>
+    <button class="vid-btn play-btn" data-action="play">${IC.play}</button>
+    <button class="vid-btn seek-btn" data-seek="10"  title="+10s">${IC.fwd}</button>
+  </div>`;
+
+  /* volume bar */
+  const vol = document.createElement('div');
+  vol.className = 'vid-vol';
+  const _initVol = opts.muted ? 0 : Math.max(0, Math.min(1, opts.volume ?? 1));
+  const _initPct = Math.round(_initVol * 100) + '%';
+  vol.innerHTML = `
+    <div class="vid-vol-ico" data-action="mute">${_initVol === 0 ? IC.volOff : IC.volOn}</div>
+    <div class="vol-track">
+      <div class="vol-fill"  style="width:${_initPct}"></div>
+      <div class="vol-thumb" style="left:${_initPct}"></div>
+    </div>`;
+
+  wrap.appendChild(video);
+  wrap.appendChild(ctrl);
+  wrap.appendChild(vol);
+  container.appendChild(wrap);
+
+  const playBtn  = ctrl.querySelector('[data-action="play"]');
+  const muteIco  = vol.querySelector('[data-action="mute"]');
+  const volFill  = vol.querySelector('.vol-fill');
+  const volThumb = vol.querySelector('.vol-thumb');
+  const volTrack = vol.querySelector('.vol-track');
+  video.volume = _initVol > 0 ? _initVol : 1; /* muted時も後でunmuteできるよう内部volumeは保持 */
+
+  /* UI は必ずイベント経由で更新 — 直接操作しない */
+  function syncUI() {
+    const playing = !video.paused && !video.ended;
+    wrap.classList.toggle('paused', !playing);
+    playBtn.innerHTML = playing ? IC.pause : IC.play;
+  }
+  function setVolUI(v) {
+    const pct = Math.round(v*100)+'%';
+    volFill.style.width = pct; volThumb.style.left = pct;
+    muteIco.innerHTML = v === 0 ? IC.volOff : IC.volOn;
+  }
+
+  /* play/pause/ended ですべての状態変化を受け取る */
+  video.addEventListener('play',    syncUI);
+  video.addEventListener('pause',   syncUI);
+  video.addEventListener('ended',   syncUI);
+  video.addEventListener('waiting', () => { /* バッファ中: 表示は維持 */ });
+  video.addEventListener('canplay', () => {
+    /* buffering 後に再生中なら UI を再同期 */
+    if(!video.paused) syncUI();
+  });
+
+  /* togglePlay: play()/pause() を呼ぶだけ。UI は上のイベントに任せる */
+  let _playPromise = null;
+  function togglePlay() {
+    if(video.paused || video.ended) {
+      _playPromise = video.play();
+      if(_playPromise instanceof Promise) {
+        _playPromise.catch(() => { syncUI(); }); /* 失敗したら UI を正しく戻す */
+      }
+    } else {
+      if(_playPromise instanceof Promise) {
+        _playPromise.then(() => video.pause()).catch(() => {});
+      } else {
+        video.pause();
+      }
+    }
+  }
+
+  /* コントロール全体の mousedown をスライダーにバブルさせない */
+  ctrl.addEventListener('mousedown', e => e.stopPropagation());
+  vol.addEventListener('mousedown',  e => e.stopPropagation());
+  ctrl.addEventListener('touchstart', e => e.stopPropagation(), {passive:true});
+  vol.addEventListener('touchstart',  e => e.stopPropagation(), {passive:true});
+
+  playBtn.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
+
+  /* ビデオ本体クリック: ドラッグ操作と区別するため mousedown/up の移動距離で判定 */
+  let _clickSX = 0, _clickSY = 0;
+  video.addEventListener('mousedown', e => { _clickSX = e.clientX; _clickSY = e.clientY; });
+  video.addEventListener('mouseup',   e => {
+    if(Math.hypot(e.clientX - _clickSX, e.clientY - _clickSY) < 6) togglePlay();
+  });
+  video.addEventListener('touchstart', e => { _clickSX = e.touches[0].clientX; _clickSY = e.touches[0].clientY; }, {passive:true});
+  video.addEventListener('touchend',   e => {
+    const t = e.changedTouches[0];
+    if(Math.hypot(t.clientX - _clickSX, t.clientY - _clickSY) < 10) togglePlay();
+  });
+
+  ctrl.querySelectorAll('[data-seek]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      video.currentTime = Math.max(0, Math.min(video.duration||0, video.currentTime + Number(btn.dataset.seek)));
+    });
+  });
+  muteIco.addEventListener('click', e => {
+    e.stopPropagation();
+    video.muted = !video.muted;
+    setVolUI(video.muted ? 0 : video.volume);
+  });
+
+  let dragging = false;
+  function setVolFromE(e) {
+    const r = volTrack.getBoundingClientRect();
+    const v = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    video.volume = v; video.muted = v === 0; setVolUI(v);
+  }
+  volTrack.addEventListener('mousedown', e => { dragging=true; setVolFromE(e); e.stopPropagation(); });
+  window.addEventListener('mousemove',   e => { if(dragging) setVolFromE(e); });
+  window.addEventListener('mouseup',     () => { dragging=false; });
+  volTrack.addEventListener('touchstart', e => { dragging=true; setVolFromE(e.touches[0]); e.stopPropagation(); }, {passive:true});
+  window.addEventListener('touchmove',   e => { if(dragging) setVolFromE(e.touches[0]); }, {passive:true});
+  window.addEventListener('touchend',    () => { dragging=false; });
+  return wrap;
+}
+
+/* ════════════════════════════════════════════════
+   REEL BUILD
+   ════════════════════════════════════════════════ */
+(function(){
+  const el = document.getElementById('reel-el');
+  if(REEL.type==='local' && REEL.src) {
+    buildVideoPlayer(el, REEL.src, REEL.thumb || null, { volume: REEL.volume ?? 1 });
+  } else if(REEL.type==='vimeo' && REEL.vimeoId) {
+    el.innerHTML = `<iframe src="https://player.vimeo.com/video/${REEL.vimeoId}?background=1&autoplay=1&loop=1&muted=1" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;display:block;border:none;"></iframe>`;
+  } else if(REEL.type==='youtube' && REEL.youtubeId) {
+    el.innerHTML = `<iframe src="https://www.youtube.com/embed/${REEL.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${REEL.youtubeId}&controls=0&rel=0" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;display:block;border:none;"></iframe>`;
+  } else {
+    el.innerHTML = `<div class="reel-ph"><div class="reel-ph-inner">
+      <div class="reel-ph-label">Reel</div>
+      <div class="reel-ph-hint">REEL.src を設定 (portfolio/Reel/reel.mp4)</div>
+    </div></div>`;
+  }
+})();
+
+/* ════════════════════════════════════════════════
+   PROFILE BUILD
+   ════════════════════════════════════════════════ */
+(function(){
+  const wrap = document.getElementById('prof-photo');
+  wrap.innerHTML = `<svg class="prof-photo-ph" viewBox="0 0 186 248" xmlns="http://www.w3.org/2000/svg">
+    <rect width="186" height="248" fill="rgba(0,0,0,0.08)"/>
+    <ellipse cx="93" cy="82" rx="32" ry="38" fill="rgba(0,0,0,0.07)"/>
+    <rect x="30" y="142" width="126" height="82" rx="8" fill="rgba(0,0,0,0.07)"/>
+  </svg>`;
+  const img = new Image();
+  img.onload = () => {
+    wrap.innerHTML = '';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+    wrap.appendChild(img);
+  };
+  img.src = PROFILE_DATA.photo;
+  document.getElementById('prof-name-el').textContent = PROFILE_DATA.name;
+  document.getElementById('prof-role-el').textContent = PROFILE_DATA.role;
+  const items = document.getElementById('prof-items-el');
+  PROFILE_DATA.bio.forEach(line => {
+    const d = document.createElement('div');
+    d.className = 'prof-item'; d.innerHTML = line;
+    items.appendChild(d);
+  });
+})();
+
+/* ════════════════════════════════════════════════
+   PAGE NAVIGATION — fade transition
+   ════════════════════════════════════════════════ */
+function setNav(w) {
+  document.getElementById('nb-home').classList.toggle('on', !w);
+  document.getElementById('nb-works').classList.toggle('on',  w);
+  const moHome  = document.getElementById('mo-home');
+  const moWorks = document.getElementById('mo-works');
+  if(moHome)  moHome.classList.toggle('on', !w);
+  if(moWorks) moWorks.classList.toggle('on',  w);
+}
+
+function switchView(fromId, toId, afterFn) {
+  const from = document.getElementById(fromId);
+  const to   = document.getElementById(toId);
+  if(!from.classList.contains('on')) {
+    /* source isn't showing — just show target */
+    to.classList.add('on');
+    window.scrollTo(0,0);
+    trigReveal();
+    if(afterFn) setTimeout(afterFn, 420);
+    return;
+  }
+  from.classList.add('leaving');
+  setTimeout(() => {
+    from.classList.remove('on','leaving');
+    to.classList.add('on');
+    window.scrollTo(0,0);
+    trigReveal();
+    if(afterFn) setTimeout(afterFn, 420);
+  }, 340);
+}
+
+function goHome() {
+  if(document.getElementById('view-home').classList.contains('on')) return;
+  switchView('view-works','view-home');
+  setNav(false);
+  // Regenerate background each time HOME is opened
+  if(window._bgRebuild) window._bgRebuild();
+}
+function goWorks() {
+  if(document.getElementById('view-works').classList.contains('on')) return;
+  switchView('view-home','view-works');
+  setNav(true);
+}
+function jump(id) {
+  const go = () => { const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); };
+  if(document.getElementById('view-home').classList.contains('on')) { setTimeout(go, 60); }
+  else { switchView('view-works','view-home', go); setNav(false); }
+}
+
+/* ════════════════════════════════════════════════
+   REVEAL OBSERVER
+   ════════════════════════════════════════════════ */
+const rvIO = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.classList.add('on');
+      rvIO.unobserve(e.target); /* 一度発火したら監視解除 — スクロール戻しで再アニメしない */
+    }
+  });
+}, { threshold: 0.08 });
+function trigReveal() {
+  document.querySelectorAll('.rv').forEach(el => {
+    rvIO.observe(el);
+    if(el.getBoundingClientRect().top < window.innerHeight * 0.92) el.classList.add('on');
+  });
+}
+/* ── ページ固有の細粒 reveal 設定（observe sweep より前に実行） ── */
+(function(){
+  /* #reel はトップ固定なので rv 不要 — スクロール reveal は適用しない */
+
+  /* #profile → section ではなく prof-card 単体で reveal */
+  const profSection = document.getElementById('profile');
+  if(profSection) {
+    profSection.classList.remove('rv');
+    const card = profSection.querySelector('.prof-card');
+    if(card) card.classList.add('rv');
+  }
+
+  /* #contact → section ではなく子要素それぞれで reveal & stagger */
+  const contactSection = document.getElementById('contact');
+  if(contactSection) {
+    contactSection.classList.remove('rv');
+    ['.ct-label', '.ct-mail', '.ct-sns'].forEach((sel, i) => {
+      const el = contactSection.querySelector(sel);
+      if(!el) return;
+      el.classList.add('rv');
+      el.style.transitionDelay = `${i * 0.10}s`;
+    });
+  }
+})();
+
+/* 全 .rv を一括監視 & 即時ビューポート判定 */
+document.querySelectorAll('.rv').forEach(el => rvIO.observe(el));
+trigReveal(); /* DOM ready 時点で即発火（load 待ちしない） */
+window.addEventListener('load', trigReveal); /* 遅延リソース完了後も念のため再チェック */
+
+/* ════════════════════════════════════════════════
+   CAROUSEL
+   ════════════════════════════════════════════════ */
+(function(){
+  const track = document.getElementById('car-track');
+
+  const visibleProjects = projects.filter(p => !p.hidden);
+  [...visibleProjects,...visibleProjects].forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'cc';
+    const img = mkImg(p.thumbSrc, p.title);
+    if(p.thumbPos) img.style.objectPosition = p.thumbPos;
+    card.appendChild(img);
+    card.insertAdjacentHTML('beforeend',
+      `<div class="cc-shad"></div>
+       <div class="cc-info"><div class="cc-ttl">${p.title}</div><div class="cc-sub">${p.genre}</div></div>`);
+    track.appendChild(card);
+  });
+
+  /* rAF ループ — 折返し点で瞬時リセットしてシームレスに繰り返す */
+  const SPEED = 52; /* px/秒 — 少しゆっくりめでリッチに */
+  let pos = 0, halfW = 0, lastT = null;
+  const n = visibleProjects.length; /* 前半カード枚数 */
+
+  function updateHalfW() {
+    const cards = track.children;
+    if(n > 0 && cards[n]) {
+      /* 前半1枚目〜後半1枚目の距離 = 正確なループ幅
+         scrollWidth/2 は padding を含むためズレる → offsetLeft 差分で計測 */
+      const newHalf = cards[n].offsetLeft - cards[0].offsetLeft;
+      if(halfW > 0 && newHalf > 0) {
+        pos = pos * newHalf / halfW; /* リサイズ時に pos を比例スケール — 位置を維持 */
+      }
+      halfW = newHalf;
+    }
+  }
+  window.addEventListener('resize', updateHalfW);
+  window.addEventListener('load',   updateHalfW); /* 画像読込後に再計測 */
+  requestAnimationFrame(() => { updateHalfW(); });
+
+  function tick(t) {
+    if(lastT !== null && halfW > 0) {
+      const dt = Math.min(t - lastT, 80); /* タブ復帰時の dt 爆発を防ぐ (80ms cap) */
+      pos += SPEED * dt / 1000;
+      if(pos >= halfW) pos -= halfW; /* 見た目が同じ位置なので jump は不可視 */
+      track.style.transform = `translateX(-${pos}px)`;
+    }
+    lastT = t;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+/* ════════════════════════════════════════════════
+   WORKS GRID
+   ════════════════════════════════════════════════ */
+(function(){
+  const grid = document.getElementById('wgrid');
+  let displayIdx = 0;
+  projects.forEach(p => {
+    if(p.hidden) return; /* ← hidden: true で非表示・番号スキップ */
+    displayIdx++;
+
+    const cell = document.createElement('div');
+    cell.className = 'wi-cell';
+    cell.dataset.cat = p.category;
+    cell.dataset.genre = p.genre;
+
+    const box = document.createElement('div');
+    box.className = 'wi-img';
+    const gi = mkImg(p.thumbSrc, p.title);
+    if(p.gridPos) gi.style.objectPosition = p.gridPos;
+    box.appendChild(gi);
+    box.insertAdjacentHTML('beforeend', `<div class="wi-img-num">${String(displayIdx).padStart(2,'0')}</div>`);
+
+    const lbl = document.createElement('div');
+    lbl.className = 'wi-label';
+    lbl.innerHTML = `<span class="wi-ttl">${p.title}</span><span class="wi-sub">${p.subtitle}</span>`;
+
+    cell.appendChild(box);
+    cell.appendChild(lbl);
+    cell.addEventListener('click', () => openModal(p.id));
+    /* スクロール reveal — カラム番号でスタガー */
+    cell.classList.add('rv');
+    cell.style.transitionDelay = `${((displayIdx - 1) % 4) * 0.07}s`;
+    grid.appendChild(cell);
+    rvIO.observe(cell);
+  });
+})();
+
+/* ════════════════════════════════════════════════
+   FILTERS
+   ════════════════════════════════════════════════ */
+let aCat='all', aGenre='all';
+(function(){
+  const cats  =['all','Corporate','Private'];
+  const genres=['all','Artist Visual','Installation','VJ','CM','MV/PV','product','Others'];
+  const fm=document.getElementById('fm');
+  const fs=document.getElementById('fs');
+  function buildFilterRow(container, items, key) {
+    const allGrp  = document.createElement('span'); allGrp.className  = 'f-all-grp';
+    const restGrp = document.createElement('span'); restGrp.className = 'f-rest-grp';
+    items.forEach((val, i) => {
+      const b = document.createElement('button');
+      b.className = 'fb' + (val==='all' ? ' on' : '');
+      b.textContent = val==='all' ? 'All' : val;
+      b.dataset[key] = val;
+      if (i === 0) {
+        allGrp.appendChild(b);
+        const s = document.createElement('span'); s.className='f-sep'; s.textContent='/';
+        allGrp.appendChild(s);
+      } else {
+        if (i > 1) { const s=document.createElement('span'); s.className='f-sep'; s.textContent='/'; restGrp.appendChild(s); }
+        restGrp.appendChild(b);
+      }
+    });
+    container.appendChild(allGrp);
+    container.appendChild(restGrp);
+  }
+  buildFilterRow(fm, cats,   'c');
+  buildFilterRow(fs, genres, 'g');
+})();
+function applyFilter(){
+  document.querySelectorAll('.wi-cell').forEach(el=>{
+    const ok=(aCat==='all'||el.dataset.cat===aCat)&&(aGenre==='all'||el.dataset.genre===aGenre);
+    el.classList.toggle('hidden',!ok);
+  });
+}
+document.getElementById('fm').addEventListener('click',e=>{
+  if(!e.target.dataset.c)return;
+  aCat=e.target.dataset.c;
+  document.querySelectorAll('#fm .fb').forEach(b=>b.classList.toggle('on',b.dataset.c===aCat));
+  applyFilter();
+});
+document.getElementById('fs').addEventListener('click',e=>{
+  if(!e.target.dataset.g)return;
+  aGenre=e.target.dataset.g;
+  document.querySelectorAll('#fs .fb').forEach(b=>b.classList.toggle('on',b.dataset.g===aGenre));
+  applyFilter();
+});
+
+/* ════════════════════════════════════════════════
+   MODAL
+   ════════════════════════════════════════════════ */
+const modal   = document.getElementById('modal');
+const mMedia  = document.getElementById('m-media');
+const mInfo   = document.getElementById('m-info');
+const mCrumb  = document.getElementById('mcrumb');
+const mScroll = document.getElementById('m-scroll');
+
+const TOOL_MAP = {
+  '#AfterEffects':'Ae','#Ae':'Ae','#Photoshop':'Ps',
+  '#PremierePro':'Pr', '#Pr':'Pr','#Premiere':'Pr',
+  '#Blender':'Blender', '#Cinema4D':'C4D','#Processing':'Processing',
+  '#TouchDesigner':'TD', '#Illustrator':'Ai', '#Lightroom':'Lr',
+  '#DaVinci':'DR',
+};
+function isVideoFile(s) { return /\.(mp4|mov|webm|ogg|m4v)$/i.test(s); }
+
+/* drag handler refs — cleaned up on close */
+let _dragHandlers = null;
+
+function openModal(id) {
+  const p = projects.find(x=>x.id===id); if(!p) return;
+
+  /* clean up any previous drag listeners */
+  if(_dragHandlers) {
+    window.removeEventListener('mousemove', _dragHandlers.move);
+    window.removeEventListener('mouseup',   _dragHandlers.end);
+    _dragHandlers = null;
+  }
+
+  /* breadcrumb */
+  mCrumb.innerHTML =
+    `<a onclick="closeModal(); goWorks()">Works</a>
+     <span class="cr-sep">›</span>
+     <span class="cr-cur">${p.category}</span>
+     <span class="cr-sep">›</span>`;
+
+  /* topper */
+  document.getElementById('m-ttl').textContent  = p.title;
+  document.getElementById('m-sub').textContent  = p.subtitle;
+  document.getElementById('m-date').textContent = p.month
+    ? `${p.year}.${String(p.month).padStart(2,'0')}` : p.year;
+
+  /* tool badges */
+  const toolsFromTags = (p.tags || []).map(t => TOOL_MAP[t]).filter(Boolean);
+  const toolsFromList = p.tools || [];
+  const allTools = [...new Set([...toolsFromList, ...toolsFromTags])];
+  const toolBadges = allTools
+    .map(t => `<span class="mi-tool" data-tool="${t}">${t}</span>`).join('');
+  document.getElementById('m-tools').innerHTML = toolBadges;
+
+  mMedia.innerHTML = '';
+  mInfo.innerHTML  = '';
+
+  /* ── Build media item descriptors ── */
+  const mediaItems = [];
+  if(p.vimeoId || p.youtubeId) {
+    mediaItems.push({ type:'embed', vimeoId:p.vimeoId, youtubeId:p.youtubeId, caption:{label:'',text:''} });
+  }
+ (p.mediaFiles||[]).forEach((file, i) => {
+  const entry = typeof file === 'string' ? { src: file } : file;
+  const caption = p.captions?.[i] || {label:'', text:''};
+
+  // 外部URLの場合（YouTube / Vimeo）
+  if(entry.src && /^https?:\/\//.test(entry.src)) {
+    let ytId = null, viId = null;
+    const ytMatch = entry.src.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([A-Za-z0-9_-]{11})/);
+    const viMatch = entry.src.match(/vimeo\.com\/(\d+)/);
+    if(ytMatch) ytId = ytMatch[1];
+    if(viMatch) viId = viMatch[1];
+    if(ytId || viId) {
+      mediaItems.push({ type:'embed', youtubeId: ytId||'', vimeoId: viId||'', caption });
+    }
+    return;
+  }
+
+  // ローカルファイルの場合（従来通り）
+  const src   = `${p.projectFolder}/${entry.src}`;
+  const thumb = entry.thumb ? entry.thumb : null;
+  if(isVideoFile(src)) mediaItems.push({ type:'video', src, thumb, caption });
+  else                 mediaItems.push({ type:'image', src, caption });
+});
+
+  let current = 0;
+
+  /* ── Slider ── */
+  const slider = document.createElement('div');
+  slider.className = 'mslider';
+  const track = document.createElement('div');
+  track.className = 'mslider-track';
+
+  mediaItems.forEach(item => {
+    const slide = document.createElement('div');
+    slide.className = 'mslider-item';
+    if(item.type === 'embed') {
+      slide.innerHTML = item.vimeoId
+        ? `<iframe src="https://player.vimeo.com/video/${item.vimeoId}?color=fff&title=0&byline=0&portrait=0" allow="autoplay;fullscreen" allowfullscreen></iframe>`
+        : `<iframe src="https://www.youtube.com/embed/${item.youtubeId}?rel=0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>`;
+    } else if(item.type === 'video') {
+      buildVideoPlayer(slide, item.src, item.thumb, { loop: true, muted: true });
+    } else {
+      slide.appendChild(mkImg(item.src, item.caption?.label || ''));
+    }
+    track.appendChild(slide);
+  });
+  slider.appendChild(track);
+
+  /* ── Dots (overlaid on slider) ── */
+  const dotsEl = document.createElement('div');
+  dotsEl.className = 'mdots';
+  mediaItems.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'mdot';
+    d.addEventListener('click', () => goToSlide(i));
+    dotsEl.appendChild(d);
+  });
+  slider.appendChild(dotsEl);
+  mMedia.appendChild(slider);
+
+  /* ── Caption ── id:EX は右パネル表示、それ以外はメディア下 */
+  const useRightCaption = (p.id === 'EX');
+  let captionEl = null;
+  if(!useRightCaption) {
+    captionEl = document.createElement('div');
+    captionEl.className = 'mcaption';
+    mMedia.appendChild(captionEl);
+  }
+
+  /* ── Thumbnail strip ── */
+  const thumbWrap  = document.createElement('div');
+  thumbWrap.className = 'mthumb-wrap';
+
+
+  const thumbStrip = document.createElement('div');
+  thumbStrip.className = 'mthumb-strip';
+
+  const playIcon = `
+    <div class="mthumb-play-icon">
+      <svg width="10" height="12" viewBox="0 0 10 12" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1l8 5-8 5V1z"/>
+      </svg>
+    </div>`;
+
+  mediaItems.forEach((item, i) => {
+    const th = document.createElement('div');
+    th.className = 'mthumb-item';
+
+    if(item.type === 'embed') {
+      if(item.thumb) {
+        th.appendChild(mkImg(item.thumb, ''));
+        th.insertAdjacentHTML('beforeend', playIcon);
+      } else if(item.youtubeId) {
+        th.appendChild(mkImg(`https://img.youtube.com/vi/${item.youtubeId}/mqdefault.jpg`, ''));
+        th.insertAdjacentHTML('beforeend', playIcon);
+      } else {
+        th.innerHTML = `<div class="mthumb-item-vid">▶</div>`;
+      }
+    } else if(item.type === 'video' && !item.thumb) {
+      th.innerHTML = `<div class="mthumb-item-vid">▶</div>`;
+    } else if(item.type === 'video' && item.thumb) {
+      th.appendChild(mkImg(item.thumb, ''));
+      th.insertAdjacentHTML('beforeend', playIcon);
+    } else {
+      th.appendChild(mkImg(item.src, ''));
+    }
+
+    th.addEventListener('click', () => goToSlide(i));
+    thumbStrip.appendChild(th);
+  });
+  thumbWrap.appendChild(thumbStrip);
+
+  /* ── Nav bar (scrollbar + Top / Bottom) ── */
+  const nav     = document.createElement('div');
+  nav.className = 'mnav';
+
+  const btnTop  = document.createElement('button');
+  btnTop.className = 'mnav-btn';
+  btnTop.textContent = 'Top';
+  btnTop.addEventListener('click', () => thumbStrip.scrollTo({top:0, behavior:'smooth'}));
+
+  const navBar  = document.createElement('div');
+  navBar.className = 'mnav-bar';
+  const navFill = document.createElement('div');
+  navFill.className = 'mnav-fill';
+  navBar.appendChild(navFill);
+
+  const btnBot  = document.createElement('button');
+  btnBot.className = 'mnav-btn';
+  btnBot.textContent = 'Bottom';
+  btnBot.addEventListener('click', () => thumbStrip.scrollTo({top:thumbStrip.scrollHeight, behavior:'smooth'}));
+
+  nav.appendChild(btnTop);
+  nav.appendChild(navBar);
+  nav.appendChild(btnBot);
+  thumbWrap.appendChild(nav);
+
+  /* ── Custom overlay scrollbar ── */
+  const scrollbarTrack = document.createElement('div');
+  scrollbarTrack.className = 'mscrollbar';
+  const scrollbarThumb = document.createElement('div');
+  scrollbarThumb.className = 'mscrollbar-thumb';
+  scrollbarTrack.appendChild(scrollbarThumb);
+  thumbWrap.appendChild(scrollbarTrack);
+
+  mMedia.appendChild(thumbWrap);
+
+  /* scrollbar sync */
+  function updateScrollbar() {
+    const max = thumbStrip.scrollHeight - thumbStrip.clientHeight;
+    const ratio = max > 0 ? thumbStrip.scrollTop / max : 0;
+    navFill.style.width = (ratio * 100) + '%';
+    /* custom scrollbar thumb */
+    const trackH = scrollbarTrack.clientHeight;
+    const visRatio = thumbStrip.clientHeight / (thumbStrip.scrollHeight || 1);
+    const thumbH = Math.max(16, trackH * visRatio);
+    scrollbarThumb.style.height = thumbH + 'px';
+    scrollbarThumb.style.top = (ratio * (trackH - thumbH)) + 'px';
+    /* show/hide track when no scroll needed */
+    scrollbarTrack.style.display = max > 0 ? 'block' : 'none';
+  }
+  thumbStrip.addEventListener('scroll', updateScrollbar);
+  /* initial update after layout */
+  requestAnimationFrame(updateScrollbar);
+
+  /* ── goToSlide ── */
+  function goToSlide(i) {
+    /* pause all videos before switching */
+    track.querySelectorAll('video').forEach(v => {
+      v.pause();
+      const vw = v.closest('.vid-wrap');
+      if(vw) {
+        vw.classList.add('paused');
+        const pb = vw.querySelector('[data-action="play"]');
+        if(pb) pb.innerHTML = IC.play;
+      }
+    });
+
+    current = i;
+    track.style.transform = `translateX(-${i * 100}%)`;
+
+    /* dots */
+    dotsEl.querySelectorAll('.mdot').forEach((d,j) => d.classList.toggle('on', j===i));
+
+    /* caption */
+    const cap = mediaItems[i]?.caption;
+    const capLabel = cap?.label || '';
+    const capBody  = cap?.text  || '';
+
+    if(useRightCaption) {
+      /* 右パネルのキャプション（タイトル・本文）を更新 */
+      const labelEl = mInfo.querySelector('.mi-cap-label');
+      const dateEl  = mInfo.querySelector('.mi-cap-date');
+      const textEl  = mInfo.querySelector('.mi-cap-text');
+      if(labelEl) labelEl.textContent = capLabel;
+      if(dateEl)  dateEl.textContent  = cap?.date || '';
+      if(textEl)  textEl.innerHTML    = capBody.replace(/\n/g,'<br>');
+
+      /* セクションをスライドごとに切り替え */
+      const secLive = mInfo.querySelector('.mi-sec-live');
+      if(secLive) secLive.innerHTML = renderSecs(cap?.sections || []);
+    } else if(captionEl) {
+      let capHTML = '';
+      if(capLabel && capBody) {
+        capHTML = `<strong>${capLabel}</strong> — ${capBody.replace(/\n/g,'<br>')}`;
+      } else if(capLabel) {
+        capHTML = `<strong>${capLabel}</strong>`;
+      } else if(capBody) {
+        capHTML = capBody.replace(/\n/g,'<br>');
+      }
+      captionEl.innerHTML = capHTML;
+      captionEl.classList.toggle('has-text', !!capHTML);
+    }
+
+    /* thumbnails */
+    const ths = thumbStrip.querySelectorAll('.mthumb-item');
+    ths.forEach((th,j) => th.classList.toggle('on', j===i));
+    if(ths[i]) ths[i].scrollIntoView({block:'nearest', behavior:'smooth'});
+
+    updateScrollbar();
+
+    /* autoplay muted-loop video on active slide — UI は play イベントが更新する */
+    const activeSlide = track.children[i];
+    if(activeSlide) {
+      const vid = activeSlide.querySelector('video');
+      if(vid && vid.loop && vid.muted) {
+        vid.play().catch(() => {});
+      }
+    }
+  }
+  /* ── INFO column — goToSlide(0) より前に構築する必要がある ── */
+  function renderSecs(secs) {
+    return (secs||[]).map(s =>
+      `<div class="mi-sec">
+        <div class="mi-sec-k">${s.label}</div>
+        <div class="mi-sec-v">${s.text}</div>
+      </div>`).join('');
+  }
+  const tagsH = `<div class="mi-tags">${(p.tags||[]).map(t=>`<span class="mi-tag">${t}</span>`).join(' ')}</div>`;
+
+  mInfo.innerHTML = `
+    ${useRightCaption ? `<div class="mi-caption-block">
+      <div class="mi-cap-header">
+        <div class="mi-cap-label"></div>
+        <div class="mi-cap-date"></div>
+      </div>
+      <div class="mi-cap-text"></div>
+    </div><hr class="mi-divider">` : ''}
+    <div class="mi-meta">
+      <div class="mi-row">
+        <span class="mi-k">Role</span>
+        <span class="mi-v">${p.role}</span>
+      </div>
+      <div class="mi-row"><span class="mi-k">Client</span><span class="mi-v">${p.client}</span></div>
+    </div>
+    <hr class="mi-divider">
+    <div class="mi-sec-live">${renderSecs(p.sections)}</div>
+    <hr class="mi-divider">
+    ${tagsH}`;
+
+  goToSlide(0);
+
+  /* ── Swipe / drag on slider ── */
+  let dragSX = null, dragSY = null, dragDX = 0, dragActive = false, _sliderW = 0, _dragRAF = null;
+  const THRESH = 40;
+
+  function sliderDragStart(x, y) {
+    dragSX = x; dragSY = y; dragDX = 0; dragActive = true;
+    _sliderW = slider.offsetWidth; /* cache once to avoid reflow per frame */
+    track.style.transition = 'none';
+  }
+  function sliderDragMove(x, y) {
+    if(!dragActive) return;
+    const dx = x - dragSX, dy = y - dragSY;
+    if(Math.abs(dy) > Math.abs(dx) * 1.2) { sliderDragEnd(); return; }
+    dragDX = dx;
+    if(_dragRAF) return; /* throttle to one rAF per frame */
+    _dragRAF = requestAnimationFrame(() => {
+      track.style.transform = `translateX(${-current * _sliderW + dragDX}px)`;
+      _dragRAF = null;
+    });
+  }
+  /* PC版 mdots フェードアウト transition 時間と同一 (0.22s) */
+  const DOTS_TOUCH_DELAY = 220;
+
+  function showDotsMomentarily() {
+    dotsEl.classList.add('touch-active');
+    clearTimeout(dotsEl._touchTimer);
+    dotsEl._touchTimer = setTimeout(() => {
+      dotsEl.classList.remove('touch-active');
+    }, DOTS_TOUCH_DELAY);
+  }
+
+  function sliderDragEnd() {
+    if(!dragActive) return;
+    dragActive = false;
+    if(_dragRAF) { cancelAnimationFrame(_dragRAF); _dragRAF = null; }
+    track.style.transition = '';
+    if     (dragDX < -THRESH && current < mediaItems.length - 1) goToSlide(current + 1);
+    else if(dragDX >  THRESH && current > 0)                     goToSlide(current - 1);
+    else if(Math.abs(dragDX) > 4) {
+      /* 閾値未満の中途半端なドラッグ → 位置だけリセット、自動再生しない */
+      track.style.transform = `translateX(-${current * 100}%)`;
+    }
+    /* dragDX≒0 (クリック判定) の場合は何もしない — 再生/停止はビデオ側が処理済み */
+    dragDX = 0;
+    /* タッチデバイスでスワイプ後にドットを一時表示（PC版フェードアウト時間=0.22sで消える） */
+    if('ontouchstart' in window) showDotsMomentarily();
+  }
+
+  slider.addEventListener('mousedown', e => { e.preventDefault(); sliderDragStart(e.clientX, e.clientY); });
+  slider.addEventListener('touchstart', e => sliderDragStart(e.touches[0].clientX, e.touches[0].clientY), {passive:true});
+  slider.addEventListener('touchmove', e => {
+    if(!dragActive) return;
+    const dx = e.touches[0].clientX - dragSX;
+    const dy = e.touches[0].clientY - dragSY;
+    if(Math.abs(dx) > Math.abs(dy) * 0.8) { e.preventDefault(); }
+    sliderDragMove(e.touches[0].clientX, e.touches[0].clientY);
+  }, {passive:false});
+  slider.addEventListener('touchend', sliderDragEnd);
+
+  const winMove = e => sliderDragMove(e.clientX, e.clientY);
+  const winEnd  = () => sliderDragEnd();
+  window.addEventListener('mousemove', winMove);
+  window.addEventListener('mouseup',   winEnd);
+  _dragHandlers = { move: winMove, end: winEnd };
+
+  /* ── Trackpad / wheel horizontal scroll ── */
+  let wheelAccum = 0, wheelTimer = null;
+  slider.addEventListener('wheel', e => {
+    if(Math.abs(e.deltaX) <= Math.abs(e.deltaY) * 0.6) return;
+    e.preventDefault();
+    wheelAccum += e.deltaX;
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {
+      if     (wheelAccum >  40 && current < mediaItems.length - 1) goToSlide(current + 1);
+      else if(wheelAccum < -40 && current > 0)                     goToSlide(current - 1);
+      wheelAccum = 0;
+    }, 40); /* 80ms→40ms で応答性向上 */
+  }, { passive: false });
+
+  document.querySelectorAll('.view.on').forEach(v => v.classList.add('modal-open'));
+  document.documentElement.classList.add('modal-active'); /* Safari: ページスクロールバーを隠す */
+  requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('on')));
+}
+
+function closeModal() {
+  if(_dragHandlers) {
+    window.removeEventListener('mousemove', _dragHandlers.move);
+    window.removeEventListener('mouseup',   _dragHandlers.end);
+    _dragHandlers = null;
+  }
+  modal.classList.remove('on');
+  document.querySelectorAll('.view.modal-open').forEach(v => v.classList.remove('modal-open'));
+  document.documentElement.classList.remove('modal-active'); /* Safari: ページスクロールバーを復元 */
+  setTimeout(()=>{ mMedia.innerHTML=''; mInfo.innerHTML=''; }, 450);
+}
+document.getElementById('mclose').addEventListener('click', closeModal);
+modal.addEventListener('click', e => {
+  if(!document.getElementById('modal-sheet').contains(e.target)) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') closeModal();
+});
+
+/* ════════════════════════════════════════════════
+   GENERATIVE BACKGROUND
+   ────────────────────────────────────────────────
+   ★ MAIN_COLOR  : base hex  ←── edit this
+   ★ OPACITY_MIN : min orb alpha (0–1)
+   ★ OPACITY_MAX : max orb alpha (0–1)
+   ★ ORB_COUNT   : number of color blobs (4–7)
+   ★ STRETCH_MIN/MAX : vertical elongation factor
+   ════════════════════════════════════════════════ */
+(function () {
+  const MAIN_COLOR  = '#4A5C64';
+  const OPACITY_MIN =  0.26;
+  const OPACITY_MAX =  0.42;
+  const ORB_COUNT   =  5;
+  const STRETCH_MIN =  2.8;   /* orbs are at least 2.8× taller than wide */
+  const STRETCH_MAX =  5.5;   /* up to 5.5× — gives the long wavy look   */
+
+  const SUBS = [
+    [210, 110, 145],  // rose
+    [218, 178,  92],  // golden
+    [ 88, 158, 215],  // sky blue
+    [162, 108, 205],  // lavender
+    [ 78, 198, 182],  // teal-mint
+    [218, 128,  80],  // peach
+    [112, 145, 218],  // periwinkle
+    [175, 205, 112],  // sage green
+    [200,  80, 138],  // deep rose
+    [228, 162,  65],  // amber
+    [ 92, 178, 155],  // seafoam
+    [195, 135, 172],  // dusty mauve
+  ];
+
+  function hexToRgb(h) {
+    const n = parseInt(h.replace('#',''), 16);
+    return [(n>>16)&255, (n>>8)&255, n&255];
+  }
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length-1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i+1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  const canvas = document.getElementById('bg-canvas');
+  const ctx    = canvas.getContext('2d');
+  const BASE   = hexToRgb(MAIN_COLOR);
+  let W = 0, H, tick = 0;
+  let orbs = [];
+
+  function buildOrbs() {
+    const cols = shuffle(SUBS).slice(0, ORB_COUNT);
+    orbs = cols.map(color => ({
+      color,
+      /* orbit centre */
+      cx : W * (0.05 + Math.random() * 0.90),
+      cy : H * (0.05 + Math.random() * 0.90),
+      /* orbit radii — smaller X so blobs stay more vertical */
+      rx : W * (0.06 + Math.random() * 0.14),
+      ry : H * (0.20 + Math.random() * 0.36),
+      /* Lissajous frequencies */
+      fx : 0.00020 + Math.random() * 0.00028,
+      fy : 0.00014 + Math.random() * 0.00022,
+      /* phase offsets */
+      px : Math.random() * Math.PI * 2,
+      py : Math.random() * Math.PI * 2,
+      /* slow precession — creates swirling */
+      spinRate : (Math.random() < 0.5 ? 1 : -1)
+                  * (0.000030 + Math.random() * 0.000050),
+      spinPhase: Math.random() * Math.PI * 2,
+      /* blob size: very wide circle that gets squished by stretchY */
+      size : W * (0.50 + Math.random() * 0.50),
+      /* vertical stretch per orb — the key for the tall look */
+      stretchY: STRETCH_MIN + Math.random() * (STRETCH_MAX - STRETCH_MIN),
+      alpha: OPACITY_MIN + Math.random() * (OPACITY_MAX - OPACITY_MIN),
+    }));
+  }
+
+  function draw() {
+    /* ── Base fill ── */
+    ctx.fillStyle = `rgb(${BASE[0]},${BASE[1]},${BASE[2]})`;
+    ctx.fillRect(0, 0, W, H);
+
+    const t = tick;
+    orbs.forEach(o => {
+      /* Lissajous with precession */
+      const lx  = o.rx * Math.sin(t * o.fx + o.px);
+      const ly  = o.ry * Math.cos(t * o.fy + o.py);
+      const ang = t * o.spinRate + o.spinPhase;
+      const ca  = Math.cos(ang), sa = Math.sin(ang);
+      const x   = o.cx + ca * lx - sa * ly;
+      const y   = o.cy + sa * lx + ca * ly;
+
+      /* ── Stretch vertically via ctx.scale ── */
+      ctx.save();
+      // Scale Y: a circle of radius `size` becomes an ellipse
+      // with width = size and height = size * stretchY
+      ctx.scale(1, o.stretchY);
+
+      // In the stretched coordinate system, y coords are divided by stretchY
+      const sy = y / o.stretchY;
+      const gr = ctx.createRadialGradient(x, sy, 0, x, sy, o.size);
+      const [r, g, b] = o.color;
+      gr.addColorStop(0,    `rgba(${r},${g},${b},${o.alpha.toFixed(3)})`);
+      gr.addColorStop(0.38, `rgba(${r},${g},${b},${(o.alpha*0.48).toFixed(3)})`);
+      gr.addColorStop(0.70, `rgba(${r},${g},${b},${(o.alpha*0.12).toFixed(3)})`);
+      gr.addColorStop(1,    `rgba(${r},${g},${b},0)`);
+
+      ctx.fillStyle = gr;
+      // Fill must cover full canvas in scaled coords
+      ctx.fillRect(0, 0, W, H / o.stretchY);
+      ctx.restore();
+    });
+
+    tick++;
+    requestAnimationFrame(draw);
+  }
+
+  function resize() {
+    const newW = window.innerWidth;
+    const widthChanged = newW !== W;
+    W = canvas.width  = newW;
+    H = canvas.height = window.innerHeight;
+    /* スクロール時のモバイルアドレスバー縮退で height だけ変わる場合は再生成しない */
+    if (widthChanged || orbs.length === 0) buildOrbs();
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+
+  /* expose rebuild so navigation can trigger it */
+  window._bgRebuild = buildOrbs;
+})();
+
+/* ════════════════════════════════════════════════
+   HAMBURGER MENU
+   ════════════════════════════════════════════════ */
+(function(){
+  const hamBtn     = document.getElementById('ham-btn');
+  const navOverlay = document.getElementById('nav-overlay');
+  const navScrim   = document.getElementById('nav-scrim');
+  if(!hamBtn || !navOverlay) return;
+
+  function closeMenu() {
+    hamBtn.classList.remove('open');
+    hamBtn.setAttribute('aria-expanded', 'false');
+    navOverlay.classList.remove('open');
+    if(navScrim) navScrim.classList.remove('open');
+  }
+  function toggleMenu() {
+    const isOpen = navOverlay.classList.toggle('open');
+    hamBtn.classList.toggle('open', isOpen);
+    hamBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    if(navScrim) navScrim.classList.toggle('open', isOpen);
+  }
+
+  hamBtn.addEventListener('click', toggleMenu);
+
+  /* スクリム（左背景）クリックで閉じる */
+  if(navScrim) navScrim.addEventListener('click', closeMenu);
+
+  /* ESC で閉じる */
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMenu(); });
+
+  /* ページ遷移メニュー関数 */
+  window.navGo = function(target) {
+    closeMenu();
+    if(target === 'home')         goHome();
+    else if(target === 'works')   goWorks();
+    else if(target === 'profile') { goHome(); jump('profile'); }
+    else if(target === 'contact') { goHome(); jump('contact'); }
+  };
+})();
+
+/* ════════════════════════════════════════════════
+   AUTO-HIDE SCROLLBAR
+   スクロール中のみ表示、停止後 0.8s でフェードアウト
+   ════════════════════════════════════════════════ */
+(function(){
+  /* ── メインページ ── */
+  let pageTimer = null;
+  window.addEventListener('scroll', () => {
+    document.documentElement.classList.add('is-scrolling');
+    clearTimeout(pageTimer);
+    pageTimer = setTimeout(() => {
+      document.documentElement.classList.remove('is-scrolling');
+    }, 800);
+  }, { passive: true });
+
+  /* ── モーダル .m-scroll ── */
+  document.addEventListener('scroll', e => {
+    const el = e.target;
+    if(!el.classList.contains('m-scroll')) return;
+    el.classList.add('is-scrolling');
+    clearTimeout(el._sbTimer);
+    el._sbTimer = setTimeout(() => el.classList.remove('is-scrolling'), 800);
+  }, { passive: true, capture: true });
+})();
+</script>
+</body>
+</html>
