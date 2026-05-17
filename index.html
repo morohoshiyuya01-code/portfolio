@@ -1024,7 +1024,10 @@ footer {
    RESPONSIVE — ≤ 480px  logo-sub 非表示
    ══════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .logo-sub { display: none; }
+  :root { --hh: 58px; }
+  .logo-name { font-size: 11px; letter-spacing: 0.07em; }
+  .logo-sub  { font-size: 8px; max-width: clamp(120px, 44vw, 220px);
+               overflow: hidden; text-overflow: ellipsis; }
 }
 
 /* ══════════════════════════════════════════════
