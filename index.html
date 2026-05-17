@@ -1487,7 +1487,7 @@ const projects = [
     ,hidden: true
   },
   {
-    id:"EX", title:"Gallery", subtitle:"Selected Works",
+    id:"EX",num:"EX",title:"Gallery", subtitle:"Selected Works",
     category:"Private", genre:"Others", year:"",
     client:"", role:"",
     thumbSrc:"thumbnail/EX/01.jpg", projectFolder:"projects/EX",
@@ -1881,7 +1881,7 @@ window.addEventListener('load', trigReveal); /* 遅延リソース完了後も�
     const box = document.createElement('div');
     box.className = 'wi-img';
     const gi = mkImg(p.thumbSrc, p.title);
-    if(p.gridPos) gi.style.objectPosition = p.gridPos;
+    box.insertAdjacentHTML('beforeend', `<div class="wi-img-num">${p.num ?? String(displayIdx).padStart(2,'0')}</div>`);
     box.appendChild(gi);
     box.insertAdjacentHTML('beforeend', `<div class="wi-img-num">${String(displayIdx).padStart(2,'0')}</div>`);
 
