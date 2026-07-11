@@ -1297,7 +1297,7 @@ const REEL = {
 
 /* Profile data */
 const PROFILE_DATA = {
-  photo : "projects/Profile.png",
+  photo : "projects/Profile.png",thumbZoom: 1.2, 
   name  : "諸星 結也 / MOROHOSHI YUYA",
   role  : "Video Creator / Concept Designer",
   bio   : [
@@ -1824,6 +1824,7 @@ window.addEventListener('load', trigReveal); /* 遅延リソース完了後も�
     card.className = 'cc';
     const img = mkImg(p.thumbSrc, p.title);
     if(p.thumbPos) img.style.objectPosition = p.thumbPos;
+   if(p.thumbZoom) img.style.transform = `scale(${p.thumbZoom})`;
     card.appendChild(img);
     card.insertAdjacentHTML('beforeend',
       `<div class="cc-shad"></div>
