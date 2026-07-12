@@ -1703,7 +1703,10 @@ function buildVideoPlayer(container, src, thumbSrc, opts) {
   const img = new Image();
   img.onload = () => {
     wrap.innerHTML = '';
-img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;object-position:center 30%;transform:scale(1.2);transform-origin:center 30%;';
+img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block;
+  object-position: center 65%;  /* トリミング位置 */
+  transform: scale(1.2);        /* ズーム倍率 */
+  transform-origin: 65%;';
      wrap.appendChild(img);
   };
   img.src = PROFILE_DATA.photo;
