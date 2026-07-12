@@ -1037,7 +1037,7 @@ footer {
 /* ══════════════════════════════════════════════
    RESPONSIVE — ≤ 768px
    ══════════════════════════════════════════════ */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   :root { --hh: 52px; --hpad: 16px; --sec-vpad: clamp(28px, 5vh, 44px); }
 
   /* header: hide desktop nav, show hamburger */
@@ -1550,7 +1550,7 @@ function buildVideoPlayer(container, src, thumbSrc, opts) {
   video.src = src; video.playsinline = true; video.preload = 'metadata';
    video.onerror = () => {
   const label = document.createElement('span');
-  label.style.cssText = 'position:absolute;top:12px;left:14px;font-family:var(--ff-m);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.28);pointer-events:none;';
+  label.style.cssText = 'position:absolute;top:12px;left:14px;font-family:var(--ff-m);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,1.0);pointer-events:none;';
   label.textContent = 'Preparing...';
   wrap.appendChild(label);
 };
