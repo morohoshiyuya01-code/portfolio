@@ -1516,8 +1516,8 @@ const projects = [
    HELPERS
    ════════════════════════════════════════════════ */
 function phSrc(w, h, label) {
-  const t = encodeURIComponent(label||'');
-  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='${w}' height='${h}' fill='%23181D26'/><text x='50%25' y='52%25' text-anchor='middle' dominant-baseline='middle' font-family='monospace' font-size='9' fill='rgba(255,255,255,0.1)' letter-spacing='3'>${t}</text></svg>`;
+  const t = encodeURIComponent('Preparing...');
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='${w}' height='${h}' fill='%23181D26'/><text x='50%25' y='52%25' text-anchor='middle' dominant-baseline='middle' font-family='monospace' font-size='11' fill='rgba(255,255,255,0.28)' letter-spacing='6'>${t}</text></svg>`;
 }
 function mkImg(src, alt) {
   const img = document.createElement('img');
@@ -1684,8 +1684,7 @@ function buildVideoPlayer(container, src, thumbSrc, opts) {
     el.innerHTML = `<iframe src="https://www.youtube.com/embed/${REEL.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${REEL.youtubeId}&controls=0&rel=0" allow="autoplay;fullscreen" allowfullscreen style="width:100%;height:100%;display:block;border:none;"></iframe>`;
   } else {
     el.innerHTML = `<div class="reel-ph"><div class="reel-ph-inner">
-      <div class="reel-ph-label">Reel</div>
-      <div class="reel-ph-hint">REEL.src を設定 (portfolio/Reel/reel.mp4)</div>
+  <span style="font-family:var(--ff-m);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.28);">Preparing...</span>
     </div></div>`;
   }
 })();
