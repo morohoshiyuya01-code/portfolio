@@ -1549,7 +1549,10 @@ function buildVideoPlayer(container, src, thumbSrc, opts) {
   const video = document.createElement('video');
   video.src = src; video.playsinline = true; video.preload = 'metadata';
    video.onerror = () => {
-  wrap.innerHTML = '<span style="position:absolute;top:12px;left:14px;font-family:var(--ff-m);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,1.0);">Preparing...</span>';
+  const label = document.createElement('span');
+  label.style.cssText = 'position:absolute;top:12px;left:14px;font-family:var(--ff-m);font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.28);pointer-events:none;';
+  label.textContent = 'Preparing...';
+  wrap.appendChild(label);
 };
   if(thumbSrc) video.poster = thumbSrc;
   if(opts.loop)  video.loop  = true;
