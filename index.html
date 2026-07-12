@@ -2070,6 +2070,15 @@ function openModal(id) {
 
   let current = 0;
 
+   /* ── mediaFiles が空なら "Preparing..." を表示して終了 ── */
+if(mediaItems.length === 0) {
+  const ph = document.createElement('div');
+  ph.style.cssText = 'width:100%;aspect-ratio:16/9;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;';
+  ph.innerHTML = '<span style="font-family:var(--ff-m);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.28);">Preparing...</span>';
+  document.getElementById('m-media').appendChild(ph);
+  return;
+}
+
   /* ── Slider ── */
   const slider = document.createElement('div');
   slider.className = 'mslider';
