@@ -1499,18 +1499,23 @@ const projects = [
     thumbSrc:"thumbnail/EX/EX_thumb_1.png", thumbPos: "center 50%", projectFolder:"projects/EX",
     mediaFiles: ["01.png", "01.jpg", { src: "https://youtu.be/e6Y354SuQ-w", thumb: "thumbnail/EX/02.png" },"04.png",{ src: "https://www.youtube.com/watch?v=QyykV5NiTa4" } ],
     vimeoId:"", youtubeId:"",
-    captions:[
-    {label:"tomtomtom", date:"2023.4", text:"Artist Visual",
-        sections:[{label:"Work", text:"同じ名前を持つ二人組アーティスト。交互にビジュアルが差し込む、二人の存在感を均等に表現。"}]},
-      {label:"Floatrium", date:"2023.6", text:"Branding - Products",
-        sections:[{label:"Work", text:""}]},
-      {label:"Floatrium", date:"2023.6", text:"Branding - PV",
-        sections:[{label:"Work", text:""}]},
-      {label:"PLATONIC PLANET", date:"2024.8", text:"Exhibition",
-        sections:[{label:"Work", text:""}]},
-       {label:"YOU / EYE VDJ MASA feat.androp", date:"2026.6", text:"LYRIC MUSIC VIDEO",
-        sections:[{label:"Work", text:""}]},
-    ],
+  captions:[
+  { label:"tomtomtom", date:"2023.4", text:"Artist Visual",
+    client:"", role:"Edit",
+    sections:[{label:"Work", text:"同じ名前を持つ二人組アーティスト。交互にビジュアルが差し込む、二人の存在感を均等に表現。"}]},
+  { label:"Floatrium", date:"2023.6", text:"Branding - Products",
+    client:"", role:"",
+    sections:[{label:"Work", text:""}] },
+  { label:"Floatrium", date:"2023.6", text:"Branding - PV",
+    client:"", role:"",
+    sections:[{label:"Work", text:""}] },
+  { label:"PLATONIC PLANET", date:"2024.8", text:"Exhibition",
+    client:"", role:"",
+    sections:[{label:"Work", text:""}] },
+  { label:"YOU / EYE VDJ MASA feat.androp", date:"2026.6", text:"LYRIC MUSIC VIDEO",
+    client:"", role:"Animation",
+    sections:[{label:"Work", text:""}] },
+],
     sections:[],
     tags:[],
     tools: ["Ae","Ai","Pr","Ps"]
@@ -2264,6 +2269,10 @@ if(mediaItems.length === 0) {
       /* セクションをスライドごとに切り替え */
       const secLive = mInfo.querySelector('.mi-sec-live');
       if(secLive) secLive.innerHTML = renderSecs(cap?.sections || []);
+       const roleEl   = mInfo.querySelector('.mi-cap-role');
+const clientEl = mInfo.querySelector('.mi-cap-client');
+if(roleEl)   roleEl.textContent   = cap?.role   ?? p.role   ?? '';
+if(clientEl) clientEl.textContent = cap?.client ?? p.client ?? '';
     } else if(captionEl) {
       let capHTML = '';
       if(capLabel && capBody) {
@@ -2313,8 +2322,9 @@ if(mediaItems.length === 0) {
     </div><hr class="mi-divider">` : ''}
     <div class="mi-meta">
       <div class="mi-row">
-        <span class="mi-k">Role</span>
-        <span class="mi-v">${p.role}</span>
+        <span class="mi-v mi-cap-role">${p.role}</span>
+...
+<span class="mi-v mi-cap-client">${p.client}</span>
       </div>
       <div class="mi-row"><span class="mi-k">Client</span><span class="mi-v">${p.client}</span></div>
     </div>
