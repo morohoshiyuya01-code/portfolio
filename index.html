@@ -2269,10 +2269,10 @@ if(mediaItems.length === 0) {
       /* セクションをスライドごとに切り替え */
       const secLive = mInfo.querySelector('.mi-sec-live');
       if(secLive) secLive.innerHTML = renderSecs(cap?.sections || []);
-       const roleEl   = mInfo.querySelector('.mi-cap-role');
-const clientEl = mInfo.querySelector('.mi-cap-client');
-if(roleEl)   roleEl.textContent   = cap?.role   ?? p.role   ?? '';
-if(clientEl) clientEl.textContent = cap?.client ?? p.client ?? '';
+      const roleEl   = mInfo.querySelector('.mi-cap-role');
+      const clientEl = mInfo.querySelector('.mi-cap-client');
+      if(roleEl)   roleEl.textContent   = cap?.role   ?? p.role   ?? '';
+      if(clientEl) clientEl.textContent = cap?.client ?? p.client ?? '';
     } else if(captionEl) {
       let capHTML = '';
       if(capLabel && capBody) {
@@ -2322,11 +2322,14 @@ if(clientEl) clientEl.textContent = cap?.client ?? p.client ?? '';
     </div><hr class="mi-divider">` : ''}
     <div class="mi-meta">
       <div class="mi-row">
+      <div class="mi-row">
+        <span class="mi-k">Role</span>
         <span class="mi-v mi-cap-role">${p.role}</span>
-...
-<span class="mi-v mi-cap-client">${p.client}</span>
       </div>
-      <div class="mi-row"><span class="mi-k">Client</span><span class="mi-v">${p.client}</span></div>
+      <div class="mi-row">
+        <span class="mi-k">Client</span>
+        <span class="mi-v mi-cap-client">${p.client}</span>
+      </div>
     </div>
     <hr class="mi-divider">
     <div class="mi-sec-live">${renderSecs(p.sections)}</div>
