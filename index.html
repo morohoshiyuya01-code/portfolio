@@ -450,6 +450,9 @@ footer {
   column-gap: clamp(5px,0.8vw,9px); row-gap: 1px;
   flex-wrap: wrap;
 }
+@media (max-width: 768px) {
+  .wi-label { flex-direction: column; align-items: flex-start; gap: 2px; }
+}
 .wi-ttl {
   font-family: var(--ff-d);
   font-size: clamp(11px,1.1vw,13px); font-weight: var(--fw-bd);
@@ -1057,8 +1060,10 @@ footer {
   .prof-card {
     grid-template-columns: 1fr;
     max-width: 440px;
+    justify-items: center;
+    text-align: center;
   }
-  .prof-photo { max-width: 160px; }
+  .prof-photo { max-width: 160px; margin: 0 auto; }
   .prof-heading { font-size: clamp(32px, 8vw, 48px); }
   .car-title    { font-size: clamp(32px, 8vw, 48px); }
 
@@ -1304,8 +1309,8 @@ const PROFILE_DATA = {
   name  : "諸星 結也 / MOROHOSHI YUYA",
   role  : "Video Creator / Concept Designer",
   bio   : [
-    "武蔵野美術大学 造形構想学部クリエイティブイノベーション学科 卒業",
-    "現在は制作会社の映像ディレクター / エディター",
+"武蔵野美術大学 造形構想学部<br>クリエイティブイノベーション学科 卒業",
+     "現在は制作会社の映像ディレクター / エディター",
     "Tool : Adobe Creative Cloud (Ae, Ai, Lr, Pr, Ps), Blender, Procreate",
   ]
 };
