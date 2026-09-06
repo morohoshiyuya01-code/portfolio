@@ -780,33 +780,7 @@ footer {
   filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
 }
 
-/* ── Nav bar: Top / Bottom — floats over thumbnails ── */
-.mnav {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  display: flex; align-items: center; gap: 10px;
-  padding: 6px clamp(10px,1.8vw,16px);
-  border-top: 1px solid rgba(255,255,255,0.08);
-  background: rgba(30,40,46,0.60);
-  backdrop-filter: blur(24px) saturate(1.2);
-  -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  z-index: 10;
-}
-.mnav-bar {
-  flex: 1; height: 2px; background: rgba(255,255,255,0.14); border-radius: 1px;
-  position: relative; overflow: hidden;
-}
-.mnav-fill {
-  position: absolute; left: 0; top: 0; bottom: 0;
-  background: rgba(255,255,255,0.55); border-radius: 1px;
-  transition: width 0.15s;
-}
-.mnav-btn {
-  font-family: var(--ff-m); font-size: 8px; font-weight: var(--fw-bd);
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(255,255,255,0.42); background: none; border: none;
-  cursor: pointer; padding: 0; transition: color 0.2s; flex-shrink: 0;
-}
-.mnav-btn:hover { color: rgba(255,255,255,0.88); }
+
 
 /* ── Right: info column ── */
 .m-info {
@@ -864,19 +838,19 @@ footer {
    ここではテーブル外に置くための display 上書きのみ行う。 */
 .mi-role-block { margin-bottom: 0; }
 .mi-role-block .mi-k { display: block; margin-bottom: 8px; }
-.mi-role-block .mi-v { display: block; }
+.mi-role-block .mi-v { display: block; text-align: center; }
 .mi-role-line {
   position: relative; height: 3px; margin: 10px 1px 10px;
   background: rgba(0,0,0,0.12); border-radius: 2px;
 }
 .mi-role-line-fill {
   position: absolute; top: 0; bottom: 0;
-  background: rgb(88,158,215); border-radius: 2px;
+  background: rgb(74,108,124); border-radius: 2px;
 }
 .mi-role-dot {
   position: absolute; top: 50%; width: 8px; height: 8px; border-radius: 50%;
-  background: rgb(88,158,215); transform: translate(-50%,-50%);
-  box-shadow: 0 0 0 3px rgba(88,158,215,0.20);
+  background: rgb(74,108,124); transform: translate(-50%,-50%);
+  box-shadow: 0 0 0 3px rgb(74,108,124,0.20);
 }
 .mi-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
 .mi-tag {
@@ -2255,30 +2229,7 @@ if(mediaItems.length === 0) {
   });
   thumbWrap.appendChild(thumbStrip);
 
-  /* ── Nav bar (scrollbar + Top / Bottom) ── */
-  const nav     = document.createElement('div');
-  nav.className = 'mnav';
-
-  const btnTop  = document.createElement('button');
-  btnTop.className = 'mnav-btn';
-  btnTop.textContent = 'Top';
-  btnTop.addEventListener('click', () => thumbStrip.scrollTo({top:0, behavior:'smooth'}));
-
-  const navBar  = document.createElement('div');
-  navBar.className = 'mnav-bar';
-  const navFill = document.createElement('div');
-  navFill.className = 'mnav-fill';
-  navBar.appendChild(navFill);
-
-  const btnBot  = document.createElement('button');
-  btnBot.className = 'mnav-btn';
-  btnBot.textContent = 'Bottom';
-  btnBot.addEventListener('click', () => thumbStrip.scrollTo({top:thumbStrip.scrollHeight, behavior:'smooth'}));
-
-  nav.appendChild(btnTop);
-  nav.appendChild(navBar);
-  nav.appendChild(btnBot);
-  thumbWrap.appendChild(nav);
+ 
 
   /* ── Custom overlay scrollbar ── */
   const scrollbarTrack = document.createElement('div');
@@ -2294,7 +2245,6 @@ if(mediaItems.length === 0) {
   function updateScrollbar() {
     const max = thumbStrip.scrollHeight - thumbStrip.clientHeight;
     const ratio = max > 0 ? thumbStrip.scrollTop / max : 0;
-    navFill.style.width = (ratio * 100) + '%';
     /* custom scrollbar thumb */
     const trackH = scrollbarTrack.clientHeight;
     const visRatio = thumbStrip.clientHeight / (thumbStrip.scrollHeight || 1);
