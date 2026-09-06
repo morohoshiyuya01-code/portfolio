@@ -840,6 +840,7 @@ footer {
 .mi-role-block .mi-k { display: block; margin-bottom: 8px; }
 .mi-role-wrap { position: relative; padding-bottom: 26px; }
 .mi-role-block .mi-v {
+  display: block;
   position: absolute; top: 100%; margin-top: 8px;
   transform: translateX(-50%);
   max-width: 92%;
@@ -2672,14 +2673,12 @@ document.addEventListener('keydown', e => {
   }
 
   function resize() {
-    const newW = window.innerWidth;
-    const widthChanged = newW !== W;
-    resizeOff();
-    /* スクロール時のモバイルアドレスバー縮退で height だけ変わる場合は再抽選しない */
-    if (widthChanged || palette.length <= 2) buildPalette();
-    renderNoise();
-  }
-
+  resizeOff();
+  /* パレットの再抽選はしない。初回ロード時のみ安全策として抽選し、
+     以降はHOME遷移時（goHome内のwindow._bgRebuild）でのみ再生成する。 */
+  if (palette.length <= 2) buildPalette();
+  renderNoise();
+}
   window.addEventListener('resize', resize);
   resize();
   requestAnimationFrame(tick);
