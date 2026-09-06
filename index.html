@@ -838,7 +838,12 @@ footer {
    ここではテーブル外に置くための display 上書きのみ行う。 */
 .mi-role-block { margin-bottom: 0; }
 .mi-role-block .mi-k { display: block; margin-bottom: 8px; }
-.mi-role-block .mi-v { display: block; text-align: center; }
+.mi-role-wrap { position: relative; padding-bottom: 26px; }
+.mi-role-block .mi-v {
+  position: absolute; top: 100%; margin-top: 8px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
 .mi-role-line {
   position: relative; height: 3px; margin: 10px 1px 10px;
   background: rgba(0,0,0,0.12); border-radius: 2px;
@@ -1457,7 +1462,7 @@ const projects = [
     sections:[
       {label:"Work", text:"EYE VDJ MASA が同年10月にリリースしたシングル「REASON OF BIRTH feat.androp」のMVを一部制作した。"},
     ],
-    tags:["#Lyric","#MotionGraphics","#MV"],
+    tags:["#MotionGraphics","#MV"],
     tools: ["Ae","Pr"]
   },
   {
@@ -2065,7 +2070,11 @@ function roleLineHTML(range) {
     <div class="mi-role-dot" style="left:${e}%"></div>
   </div>`;
 }
-
+function roleMidPercent(range) {
+  if(!range) return 50;
+  const pts = [0, 33.333, 66.667, 100];
+  return (pts[range[0]] + pts[range[1]]) / 2;
+}
 /* drag handler refs — cleaned up on close */
 let _dragHandlers = null;
 
@@ -2346,10 +2355,12 @@ if(mediaItems.length === 0) {
       <div class="mi-cap-text"></div>
     </div><hr class="mi-divider">` : ''}
     <div class="mi-role-block">
-      <span class="mi-k">Role</span>
-      ${roleLineHTML(p.roleRange)}
-      <span class="mi-v mi-cap-role">${p.role}</span>
-    </div>
+  <span class="mi-k">Role</span>
+  <div class="mi-role-wrap">
+    ${roleLineHTML(p.roleRange)}
+    <span class="mi-v mi-cap-role" style="left:${roleMidPercent(p.roleRange)}%">${p.role}</span>
+  </div>
+</div>
     <hr class="mi-divider">
     <div class="mi-meta">
       <div class="mi-row">
