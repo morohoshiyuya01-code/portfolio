@@ -2566,15 +2566,15 @@ document.addEventListener('keydown', e => {
    ★ EVOLVE_SPEED / ROTATE_SPEED : 展開・回転（方向の変化）速度
    ════════════════════════════════════════════════ */
 (function () {
-  const MAIN_COLOR     = '#4A5C64';
-  const ORB_COUNT      =  1;   /* 使用色を限定：ペールトーンのBASE + アクセント1色 + ハイライトの構成 */
-  const STREAK_STRETCH =  2.7;
-  const WARP_AMOUNT    =  1.7;
-  const FLOW_SCALE     =  0.36;
-  const SHADE_MIN      =  0.58;  /* ペールトーンに戻す */
-  const SHADE_MAX      =  1.08;
-  const SPEC_STRENGTH  =  0.20;  /* ハイライトの絞り：範囲は狭く、白さは強めに */
-  const SPEC_POWER     =  11;
+ const MAIN_COLOR     = '#4A5C64';
+const ORB_COUNT      =  1;   /* 使用色を限定：ソフトトーンのBASE + アクセント1色 + ハイライトの構成 */
+const STREAK_STRETCH =  2.7;
+const WARP_AMOUNT    =  1.7;
+const FLOW_SCALE     =  0.36;
+const SHADE_MIN      =  0.46;  /* ソフトトーン：暗部にもう少し深みを持たせる */
+const SHADE_MAX      =  0.98;
+const SPEC_STRENGTH  =  0.14;  /* ハイライトを控えめにし、白抜けを抑える */
+const SPEC_POWER     =  11;
   const EVOLVE_SPEED   =  0.000022; /* ノイズ空間のスクロール量 / ms（よりゆったり） */
   const ROTATE_SPEED   =  0.0000045; /* 流れの向きが緩やかに回る量 / ms（よりゆったり） */
 
