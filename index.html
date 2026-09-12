@@ -2727,8 +2727,10 @@ document.addEventListener('keydown', e => {
   requestAnimationFrame(tick);
 
   /* expose rebuild so navigation can trigger it */
-  window._bgRebuild = () => { buildPalette(); renderNoise(); };
-})();
+window._bgRebuild = () => {
+  buildPalette();
+  requestAnimationFrame(() => requestAnimationFrame(renderNoise));
+};})();
 
 /* ════════════════════════════════════════════════
    HAMBURGER MENU
