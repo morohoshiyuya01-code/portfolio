@@ -2025,6 +2025,13 @@ let aCat='all', aGenre='all';
   buildFilterRow(fm, cats,   'c');
   buildFilterRow(fs, genres, 'g');
 })();
+
+function resetFilters(){
+  aCat='all'; aGenre='all';
+  document.querySelectorAll('#fm .fb').forEach(b=>b.classList.toggle('on', b.dataset.c==='all'));
+  document.querySelectorAll('#fs .fb').forEach(b=>b.classList.toggle('on', b.dataset.g==='all'));
+  applyFilter();
+}
 function applyFilter(){
   document.querySelectorAll('.wi-cell').forEach(el=>{
     /* EXTRA genre: ALLビューでは非表示、EXTRAフィルター選択時のみ表示 */
