@@ -461,8 +461,8 @@ footer {
   font-family: var(--ff-m);
   font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(240, 237, 232, 0.8);
 }
-.wi-cell.hidden { display: none !important; }
-
+.wi-cell.f-out { opacity: 0 !important; transform: translateY(14px) !important; pointer-events: none; }
+.wi-cell.f-collapsed { display: none !important; }
 /* ══════════════════════════════════════════════
    MODAL — center dissolve, strong white blur
    ══════════════════════════════════════════════ */
@@ -2032,16 +2032,36 @@ function resetFilters(){
   document.querySelectorAll('#fs .fb').forEach(b=>b.classList.toggle('on', b.dataset.g==='all'));
   applyFilter();
 }
-function applyFilter(){
+function applyFilter(animate){
   document.querySelectorAll('.wi-cell').forEach(el=>{
     /* EXTRA genre: ALLビューでは非表示、EXTRAフィルター選択時のみ表示 */
     const genreOk = aGenre==='all' ? el.dataset.genre!=='Extra' : el.dataset.genre===aGenre;
     const ok=(aCat==='all'||el.dataset.cat===aCat)&&genreOk;
-    el.classList.toggle('hidden',!ok);
+
+    if(ok){
+      clearTimeout(el._filterTimer);
+      if(el.classList.contains('f-collapsed')){
+        el.classList.remove('f-collapsed');
+        el.classList.add('f-out');
+        void el.offsetWidth; /* 強制リフロー：表示状態に戻したことを確定させてから遷移させる */
+        requestAnimationFrame(() => { el.classList.remove('f-out'); });
+      } else {
+        el.classList.remove('f-out');
+      }
+    } else {
+      if(animate===false){
+        el.classList.add('f-out');
+        el.classList.add('f-collapsed');
+      } else if(!el.classList.contains('f-out')){
+        el.classList.add('f-out');
+        clearTimeout(el._filterTimer);
+        el._filterTimer = setTimeout(() => { el.classList.add('f-collapsed'); }, 650);
+      }
+    }
   });
 }
-applyFilter();
-document.getElementById('fm').addEventListener('click',e=>{
+applyFilter(false);
+　　document.getElementById('fm').addEventListener('click',e=>{
   if(!e.target.dataset.c)return;
   aCat=e.target.dataset.c;
   document.querySelectorAll('#fm .fb').forEach(b=>b.classList.toggle('on',b.dataset.c===aCat));
