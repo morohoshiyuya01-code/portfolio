@@ -461,8 +461,14 @@ footer {
   font-family: var(--ff-m);
   font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(240, 237, 232, 0.8);
 }
-.wi-cell.f-out { opacity: 0 !important; transform: translateY(14px) !important; pointer-events: none; }
-.wi-cell.f-collapsed { display: none !important; }
+.wi-cell.hidden { display: none !important; }
+.wi-cell.f-in {
+  animation: fIn 0.5s var(--ease);
+}
+@keyframes fIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 /* ══════════════════════════════════════════════
    MODAL — center dissolve, strong white blur
    ══════════════════════════════════════════════ */
@@ -2032,35 +2038,22 @@ function resetFilters(){
   document.querySelectorAll('#fs .fb').forEach(b=>b.classList.toggle('on', b.dataset.g==='all'));
   applyFilter();
 }
-function applyFilter(animate){
+function applyFilter(){
   document.querySelectorAll('.wi-cell').forEach(el=>{
     /* EXTRA genre: ALLビューでは非表示、EXTRAフィルター選択時のみ表示 */
     const genreOk = aGenre==='all' ? el.dataset.genre!=='Extra' : el.dataset.genre===aGenre;
     const ok=(aCat==='all'||el.dataset.cat===aCat)&&genreOk;
-
-    if(ok){
-      clearTimeout(el._filterTimer);
-      if(el.classList.contains('f-collapsed')){
-        el.classList.remove('f-collapsed');
-        el.classList.add('f-out');
-        void el.offsetWidth; /* 強制リフロー：表示状態に戻したことを確定させてから遷移させる */
-        requestAnimationFrame(() => { el.classList.remove('f-out'); });
-      } else {
-        el.classList.remove('f-out');
-      }
-    } else {
-      if(animate===false){
-        el.classList.add('f-out');
-        el.classList.add('f-collapsed');
-      } else if(!el.classList.contains('f-out')){
-        el.classList.add('f-out');
-        clearTimeout(el._filterTimer);
-        el._filterTimer = setTimeout(() => { el.classList.add('f-collapsed'); }, 650);
-      }
+    const wasHidden = el.classList.contains('hidden');
+    el.classList.toggle('hidden',!ok);
+    if(ok && wasHidden){
+      /* 隠れていたものが表示に切り替わる時だけフェードイン */
+      el.classList.remove('f-in');
+      void el.offsetWidth; /* 強制リフロー：アニメーションを確実に再始動させる */
+      el.classList.add('f-in');
     }
   });
 }
-applyFilter(false);
+applyFilter();
 　　document.getElementById('fm').addEventListener('click',e=>{
   if(!e.target.dataset.c)return;
   aCat=e.target.dataset.c;
