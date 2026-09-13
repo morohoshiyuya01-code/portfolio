@@ -1895,8 +1895,8 @@ window.addEventListener('load', trigReveal); /* 遅延リソース完了後も�
    if(p.thumbZoom) img.style.transform = `scale(${p.thumbZoom})`;
     card.appendChild(img);
     card.insertAdjacentHTML('beforeend',
-      `<div class="cc-shad"></div>
-       <div class="cc-info"><div class="cc-ttl">${p.title}</div><div class="cc-sub">${p.genre}</div></div>`);
+     `<div class="cc-shad"></div>
+ <div class="cc-info"><div class="cc-ttl">${p.title}</div><div class="cc-sub">${p.subtitle}</div></div>`);
     track.appendChild(card);
   });
 
