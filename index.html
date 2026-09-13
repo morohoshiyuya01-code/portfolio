@@ -117,8 +117,8 @@ nav button:hover, nav button.on { color: var(--text); }
    REEL SECTION — top of home
    ══════════════════════════════════════════════ */
 #reel {
-  /* top = header と同じ余白 / 左右は0にして画面幅いっぱいに / bottom = --sec-vpad */
-  padding: calc(var(--hh) + var(--hpad)) 0 var(--sec-vpad);
+  /* top = header の高さ + 小さめの余白 / 左右は0にして画面幅いっぱいに / bottom = --sec-vpad */
+  padding: calc(var(--hh) + 12px) 0 var(--sec-vpad);
   border-bottom: 1px solid var(--border);
 }
 .reel-inner {
@@ -1307,7 +1307,7 @@ footer {
    ───────────────────────────────────────────────────────── */
 const REEL = {
   type     : 'keyvisual',
-  src      : 'HERO_top/key.png',   /* ← 今はPNG。後日GIFやmp4に差し替える時は拡張子ごとファイル名を変えるだけでOK */
+  src      : 'HERO_top/key_01.png',   /* ← 今はPNG。後日GIFやmp4に差し替える時は拡張子ごとファイル名を変えるだけでOK */
   thumb    : '',
   vimeoId  : '',
   youtubeId: '',
@@ -1743,11 +1743,11 @@ function buildVideoPlayer(container, src, thumbSrc, opts) {
     /* 拡張子で自動判定：画像(png/jpg/gif/webp)なら<img>、動画(mp4/webm)なら<video> */
     const isImage = /\.(png|jpe?g|gif|webp)$/i.test(REEL.src);
     if(isImage){
-      el.innerHTML = `<img src="${REEL.src}"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;">`;
+            el.innerHTML = `<img src="${REEL.src}"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;">`;
     } else {
       el.innerHTML = `<video src="${REEL.src}" autoplay loop muted playsinline
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;"></video>`;
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;"></video>`;
     }
   } else if(REEL.type==='local' && REEL.src) {
     buildVideoPlayer(el, REEL.src, REEL.thumb || null, { volume: REEL.volume ?? 1 });
