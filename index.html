@@ -33,8 +33,8 @@
   --dim    : #344048;
   --border : rgba(255,255,255,0.11);
   --hpad   : clamp(18px, 4vw, 56px);
-  --hh     : 62px;
-  --ease   : cubic-bezier(0.25, 0.46, 0.45, 0.94);
+--hh     : clamp(40px, 5.5vw, 62px);
+   --ease   : cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --sec-vpad: clamp(40px, 6vh, 72px); /* HOME sections: border間の垂直余白 */
 }
 
@@ -1043,7 +1043,6 @@ footer {
    RESPONSIVE — ≤ 480px  logo-sub 非表示
    ══════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  :root { --hh: 58px; }
   .logo-name { font-size: 11px; letter-spacing: 0.07em; }
   .logo-sub  { font-size: 8px; letter-spacing: 0.08em; white-space: nowrap; }
 }
@@ -1052,8 +1051,7 @@ footer {
    RESPONSIVE — ≤ 768px
    ══════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  :root { --hh: 52px; --hpad: 16px; --sec-vpad: clamp(28px, 5vh, 44px); }
-
+  :root { --hpad: 16px; --sec-vpad: clamp(28px, 5vh, 44px); }
   /* header: hide desktop nav, show hamburger */
   header > nav { display: none; }
   .ham-btn     { display: flex; }
