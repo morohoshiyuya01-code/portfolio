@@ -117,8 +117,8 @@ nav button:hover, nav button.on { color: var(--text); }
    REEL SECTION — top of home
    ══════════════════════════════════════════════ */
 #reel {
-  /* top = header の高さ + 小さめの余白 / 左右は0にして画面幅いっぱいに / bottom = --sec-vpad */
-  padding: calc(var(--hh) + 12px) 0 var(--sec-vpad);
+  /* top = 0（ヘッダーの背後まで画像を回り込ませる）/ 左右は0にして画面幅いっぱいに / bottom = --sec-vpad */
+  padding: 0 0 var(--sec-vpad);
   border-bottom: 1px solid var(--border);
 }
 .reel-inner {
