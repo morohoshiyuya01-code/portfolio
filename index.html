@@ -117,14 +117,14 @@ nav button:hover, nav button.on { color: var(--text); }
    REEL SECTION — top of home
    ══════════════════════════════════════════════ */
 #reel {
-  /* top = header + same gap as left/right; bottom = --sec-vpad */
-  padding: calc(var(--hh) + var(--hpad)) var(--hpad) var(--sec-vpad);
+  /* top = header と同じ余白 / 左右は0にして画面幅いっぱいに / bottom = --sec-vpad */
+  padding: calc(var(--hh) + var(--hpad)) 0 var(--sec-vpad);
   border-bottom: 1px solid var(--border);
 }
 .reel-inner {
   width: 100%; aspect-ratio: 16/9;
   background: #000; position: relative; overflow: hidden;
-  border-radius: clamp(6px, 1vw, 12px);
+  border-radius: 0;
 }
 .reel-inner iframe,
 .reel-inner video {
